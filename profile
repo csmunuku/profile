@@ -992,3 +992,9 @@ cat()
    fi
 }
 #######################################
+alias root='sudo su -'
+alias deploy='sudo su - deploy'
+alias ans='sudo su - ansible'
+alias tom='sudo su - tomcat'
+alias ng='sudo su - nginx'
+#######################################
