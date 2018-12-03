@@ -13,10 +13,8 @@ HISTFILESIZE=10000
 #####################################
 # PATH and MANPATH
 #####################################
-PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/ccs:/usr/ucb:$PATH
-PATH=/wcg/svnapache1.6/bin:$PATH
-PATH=/usr/atria/bin:$PATH:.
-PATH=/opt/ant/apache-ant-1.8.2/bin:$PATH:.;export PATH
+PATH="/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/local/bin:/opt/local/sbin"
+export PATH
 MANPATH=/usr/local/man:/usr/share/man:$MANPATH:.;export MANPATH
 #DISPLAY=localhost:0.0;export DISPLAY
 
@@ -27,10 +25,7 @@ export GREP_OPTIONS='--color=auto'
 GREP_COLORS='ms=1;31:mc=1;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
 export GREP_COLORS
 
-syn()
-{
-  /home/cmunukutla/startSynergy.sh
-}
+#syn(){ /home/cmunukutla/startSynergy.sh; }
 
 #####################################
 # Solaris Specific Aliases ##########
@@ -66,7 +61,6 @@ alias lear='clear'
 
 # Directory aliases
 alias dirs="ls -AF | grep "/$" | tr '/' ' '"
-#alias dirs="ls -AF | grep "/$" | cut -d'/' -f1"
 
 # Disk space aliases
 alias d='df -H .'
@@ -89,9 +83,6 @@ alias m='more'
 
 # general aliases specific to cd'ing to directories
 alias cs='cd ~/scripts; pwd'
-alias loc='cd /usr/local/bin; pwd'
-alias temp='cd /tmp; pwd'
-alias bin='cd bin;pwd;ls -alrt';
 alias b='cd .. ; pwd'
 #*****
 
@@ -132,9 +123,6 @@ fi
 alias g='${XGREP} '
 
 FCEDIT=/usr/bin/vi; export FCEDIT
-if [ "$SHELL" = "ksh" ]; then
-   set -o vi
-fi
 #*****
 # PS1="$LOGNAME@`uname -n | cut -f1 -d'.'`:$PWD $ "
 # PS1="[\u@\h \W]\$ "
@@ -531,17 +519,6 @@ cdns()
         fi
     fi
   fi
-}
-#*****
-
-go()
-{
-   if [ `ls -F | grep -c \/` -gt 1 ]; then
-       echo "More than one directory exists in this directory"
-   else
-     cd `ls -F | grep \/`
-     pwd
-   fi
 }
 #*****
 #File Descriptors
@@ -1014,10 +991,4 @@ cat()
        echo "Provide an argument to \"cat\" command"
    fi
 }
-#######################################
-# Your previous /Users/cmunukutla/.profile file was backed up as /Users/cmunukutla/.profile.macports-saved_2014-02-05_at_14:23:13
-
-# MacPorts Installer addition on 2014-02-05_at_14:23:13: adding an appropriate PATH variable for use with MacPorts.
-export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-# Finished adapting your PATH environment variable for use with MacPorts.
 #######################################
