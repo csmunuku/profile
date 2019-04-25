@@ -1,0 +1,127 @@
+##########################################################################################
+# SCRIPT NAME: deploy_profile
+# DESCRIPTION: Utility Functions
+# AUTHOR: Chandra Munukutla                       
+##########################################################################################
+
+# Source Generic Profile
+if [ -f /etc/.generic_profile ]; then source /etc/.generic_profile; fi
+# Source Util Profile
+if [ -f /etc/.util_profile ]; then source /etc/.util_profile; fi
+
+PATH=/usr/java/jdk1.8.0_66/jre/bin:$PATH
+export PATH
+
+alias cs='cd ~deploy/scripts; clear; pwd; ls'
+
+PS1="[\u@\h \w]\$ "
+
+#####################################################################
+webstatus()
+{
+  ts=$(date '+%Y%m%d_%H%M%S')
+  ps -ef | grep -E "haproxy|kibana|nginx: master process|newrelic" | grep -v grep > /tmp/webstatus_${ts}
+  count=$(wc -l /tmp/webstatus_${ts} | awk '{print $1}')
+  if [ $count > 0 ]; then
+     echo "########################### Processes on Web Server Node ###########################"
+     echo
+     echo "On HOST: $(hostname)"
+     echo
+     for i in $(seq 1 $count)
+     do
+       sed -n "${i}p" /tmp/webstatus_${ts} | awk '{ for(j=8;j<=NF;++j) printf( "%s ", $j ) }'
+       echo
+     done
+  fi
+  rm /tmp/webstatus_${ts}
+  echo
+  echo "####################################################################################"
+}
+#####################################################################
+apps()
+{
+  if [[ $# -eq 1 ]]; then
+       echo "App Instances Running:"
+       echo "#################################"
+       ps -ef | grep java | grep org.apache.catalina.startup.Bootstrap | grep Dcatalina.base= | grep -v grep |  awk 'BEGIN { FS = "catalina.base="} { print $2 }'| grep $1 | grep -v grep | awk '{print $1}' | awk -F'/' '{ print $NF}'
+           ps -ef | grep java | grep "\-jar" | grep $1 | grep -v grep | awk '{print $NF}' | awk -F'/' '{ print $NF}' | sort
+           echo "#################################"
+  else
+      echo "App Instances Running:"
+      echo "#################################"
+      ps -ef | grep java | grep org.apache.catalina.startup.Bootstrap | grep Dcatalina.base= | grep -v grep | awk 'BEGIN { FS = "catalina.base="} { print $2 }'| awk '{print $1}' | awk -F'/' '{ print $NF}' | sort
+      ps -ef | grep java | grep "\-jar" | grep -v grep | awk '{print $NF}' | awk -F'/' '{ print $NF}' | sort
+      echo "#################################"
+  fi
+}
+#####################################################################
+jports()
+{
+  elastic_search=org.elasticsearch.bootstrap.Elasticsearch
+  tomcat_server=org.apache.catalina.startup.Bootstrap
+  jenkins_master=jenkins.war
+  jenkins_slave=slave.jar
+  if [[ $(ps -ef | grep java | grep -i ${tomcat_server} | grep -cv grep) -gt 0 ]]; then
+    echo "-----------------"
+    echo "Tomcat processes:"
+    echo "-----------------"
+    printf "%-10s %-28s %-10s\n" "PID" "APP INSTANCE" "PORT"
+    echo "###############################################"
+    for i in $(ps -ef | grep java | grep ${tomcat_server} | sed 's/ /\n/g' | grep catalina.base= | awk -F= '{print $2}' | sort)
+    do
+      app_instance=$(echo $i | awk -F'/' '{print $NF}')
+      pid=$(ps -ef | grep java | grep "$i " | grep "Dcatalina.base=$i " | grep -v grep | awk '{print $2}')
+      port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | awk '{print $4}' | awk -F: '{print $NF}' | tr '\n' ',' | sed 's/,$//g')
+      printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+    done
+  fi
+  if [[ $(ps -ef | grep java | grep "\-jar" | grep -vE "${jenkins_master}|${jenkins_slave}" | grep -cv grep) -gt 0 ]]; then
+     echo "------------------------------------"
+     echo "Standalone/Embedded Java processes:"
+     echo "------------------------------------"
+     for i in $(ps -ef | grep java | grep "\-jar" | grep -vE "${jenkins_master}|${jenkins_slave}" | grep -v grep | awk '{print $NF}' | sort)
+     do
+       app_instance=$(echo $i | awk -F'/' '{print $NF}')
+       pid=$(ps -ef | grep java | grep "$i" | grep -v grep | awk '{print $2}')
+       port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | grep -v grep | awk '{print $4}' | awk -F: '{print $NF}')
+       printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+     done
+  fi
+  if [[ $(ps -ef | grep java | grep -iE "${jenkins_master}|${jenkins_slave}" | grep -cv grep) -gt 0 ]]; then
+      echo "-------------------"
+      echo "Jenkins processes:"
+      echo "-------------------"
+      for i in $(ps -ef | grep java | grep -iE "${jenkins_master}|${jenkins_slave}" | awk '{print $2}')
+      do
+        if [[ $(ps -u deploy -U deploy | grep $i | grep ${jenkins_master} | grep -cv grep) -eq 1 ]]; then
+           pid=$i
+           app_instance="Jenkins Master"
+           port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | awk '{print $4}' | awk -F: '{print $NF}')
+           printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+        elif [[ $(ps -ef | grep $i | grep ${jenkins_master} | grep -cv grep) -eq 1 ]]; then
+           pid=$i
+           app_instance="Jenkins"
+           printf "%-10s %-28s \n" "$pid" "$app_instance"
+        fi
+        if [[ $(ps -ef | grep $i | grep ${jenkins_slave} | grep -cv grep) -ge 1 ]]; then
+           pid=$i
+           app_instance="Jenkins Slave"
+           printf "%-10s %-28s \n" "$pid" "$app_instance"
+        fi
+      done
+  fi
+  if [[ $(ps -ef | grep java | grep "${elastic_search}" | grep -cv grep) -gt 0 ]]; then
+     echo "-------------------------"
+     echo "Elasticsearch Processes:"
+     echo "-------------------------"
+     for i in $(ps -ef | grep java | grep "${elastic_search}" | awk '{print $2}')
+     do
+           pid=$i
+           app_instance="Elasticsearch"
+           port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | awk '{print $4}' | awk -F: '{print $NF}')
+           printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+         done
+  fi
+  echo "###############################################"
+}
+#####################################################################

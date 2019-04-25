@@ -1,0 +1,69 @@
+#####################################################################
+# SCRIPT NAME: vars_checks_profile                                 #
+# DESCRIPTION: Profile to check for variables                       #
+# AUTHOR: Chandra Munukutla                                         #
+#####################################################################
+############################################
+check_var_empty()
+{
+  if [ $# -ne 1 ]; then
+     echo "Variable is either empty OR NOT provided!"
+	 exit 1
+  elif [ -z ${1} ]; then
+     echo "${1} is EMPTY!"
+     echo "Exiting.."
+     exit 1
+  fi
+}
+is_var_empty()
+{
+  if [[ $# -ne 1 || -z ${1} ]]; then
+     true
+  else
+     false
+  fi
+}
+################################################
+check_var_non_empty()
+{
+  if [ $# -ne 1 ]; then
+     echo "Variable NOT provided!"
+	 exit 1
+  elif [ -n ${1} ]; then
+     echo "${1} is NOT EMPTY!"
+     echo "Exiting.."
+     exit 1
+  fi
+}
+is_var_non_empty()
+{
+  if [[ $# -ne 1 || -n ${1} ]]; then
+     true
+  else
+     false
+  fi
+}
+################################################
+# Get the value of a property
+# from a properties file with entries like
+# key=value
+get_val()
+{
+  if [[ $# -eq 2 && -f ${2} ]]; then
+     val=$(grep -v "^#" ${2} | grep ${1}= | cut -d= -f2- | cut -d"#" -f1 | sed 's/[ \t]*$//g')
+     is_var_non_empty $val && echo ${val}
+  fi
+}
+get_keys()
+{
+  if [[ -f ${1} ]]; then
+     awk -F= '{print $1}' $1 | grep -v "^#" | grep -v '^$'
+  fi
+}
+get_vals()
+{
+  if [[ -f ${1} ]]; then
+     awk -F= '{print $NF}' $1 | grep -v "^#" | grep -v '^$'
+  fi
+}
+################################################

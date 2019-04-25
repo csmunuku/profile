@@ -1,0 +1,43 @@
+# Profile for postgres
+
+# Source Generic Profile
+if [ -f ~/.generic_profile ]; then . ~/.generic_profile; fi
+
+# PATH update
+PATH=/usr/pgsql-9.4/bin:$PATH
+export PATH
+
+# PS1
+PS1="[\u@\h \W]\$ "
+PGDATA="/etc/pgsql/9.4/data"
+
+#####################################################################
+# Functions for DB/Postgres
+pgport()
+{
+  if [ $(grep -v "^#" ${PGDATA}/postgresql.conf | grep port | grep -c "=") -eq 1 ]; then
+      port=$(grep -v "^#" ${PGDATA}/postgresql.conf | grep -E "port |port=|port =" | grep "=" | awk -F'#' '{print $1}' | awk -F= '{print $2}' | sed -e 's/[ \t]*//')
+      echo "PGPORT = $port"
+  else
+      ps -ef | grep -E "postmaster|postgres" | grep "\-p " | grep -v grep | awk '{ for(j=8;j<=NF;++j) printf( "%s ", $j ) }' | awk '{print $3}'
+      echo
+  fi
+}
+#####################################################################
+pginfo()
+{
+  PGHOME=/etc/pgsql; echo "PGHOME = $PGHOME"
+  PGDATA=/etc/pgsql/9.4/data; echo "PGDATA = $PGDATA"
+  PGVERSION=$(cat /etc/pgsql/9.4/data/PG_VERSION); echo "PGVERSION = $PGVERSION"
+  PGPORT="$(pgport)"; echo "PGPORT = $PGPORT"
+  PGPID=/etc/postgresql-9.4.pid; echo "PGPID = $PGPID = $(cat $PGPID)"
+  echo "Vaccum DB Log = ${PGHOME}/${PGVERSION}/vacuumdb.log"
+  echo "pg_log = ${PGDATA}/pg_log/postgresql-$(date '+%a').log"
+  echo "startup log = ${PGHOME}/${PGVERSION}/pgstartup.log"
+}
+#####################################################################
+dbstatus()
+{
+  ps -ef | grep postgres | grep -E "postmaster|: autovacuum launcher|: logger|: checkpointer|: writer|: wal writer|: archiver|: stats|: wal sender|$PGPORT" | grep -v grep | awk '{print $8, $9, $10, $11, $12, $13, $14, $15, $16, $17}'
+}
+#####################################################################

@@ -1,0 +1,79 @@
+#####################################################################
+# SCRIPT NAME: .file_checks_profile                                 #
+# DESCRIPTION: Profile to check for files and directories           #
+# AUTHOR: Chandra Munukutla                                         #
+#####################################################################
+
+check_file_exists()
+{
+  if [[ $# -ne 1 ]]; then
+       echo "Provide a File as an argument!!"
+       exit 1
+  elif [[ $# -eq 1 && ! -f $1 ]]; then
+       echo "Argument provided is NOT a file!"
+	   exit 1
+  fi
+}
+
+is_file()
+{
+  if [[ $# -eq 1 && -f $1 ]]; then
+     true
+  else
+     if [[ $# -ne 1 ]]; then
+        echo "Provide a File as an argument!!"
+		false
+     elif [[ $# -eq 1 && ! -f $1 ]]; then
+	    echo "Argument provided is NOT a file!"
+	    false
+     fi
+  fi
+}
+
+is_csv_file()
+{
+  is_file ${1} && {
+    if [[ $(grep -c ',' ${1}) -lt 1 ]]; then
+	   false
+	else
+	   true
+    fi
+  }
+}
+
+check_csv_file()
+{
+  check_file_exists ${1} && {
+    if [[ $(grep -c ',' ${1}) -lt 1 ]]; then
+	   echo "Argument provided is NOT a CSV file!"
+	   exit 1
+    fi
+  }
+}
+#####################################################################
+check_dir_exists()
+{
+  if [[ $# -ne 1 ]]; then
+       echo "Provide a Directory as an argument!!"
+       exit 1
+  elif [[ $# -eq 1 && ! -d $1 ]]; then
+       echo "Argument provided is NOT a Directory!"
+	   exit 1
+  fi
+}
+
+is_dir()
+{
+  if [[ $# -eq 1 && -d $1 ]]; then
+     true
+  else
+     if [[ $# -ne 1 ]]; then
+        echo "Provide a Directory as an argument!!"
+		false
+     elif [[ $# -eq 1 && ! -d $1 ]]; then
+	    echo "Argument provided is NOT a Directory!"
+	    false
+     fi
+  fi
+}
+#####################################################################

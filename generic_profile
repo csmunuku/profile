@@ -1,0 +1,465 @@
+###########################################################################
+# SCRIPT NAME: generic_profile                                           #
+# DESCRIPTION: Utility Functions                                          #
+# AUTHOR: Chandra Munukutla                                               #
+###########################################################################
+
+# Aliases
+alias c='clear'
+alias cls='clear'
+alias claer='clear'
+alias ll='ls -lrt'
+alias l='ls -lrt'
+alias la='ls -alrt'
+
+#####################################
+# GREP Color Options
+#####################################
+export GREP_OPTIONS='--color=auto'
+GREP_COLORS='ms=1;31:mc=1;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
+export GREP_COLORS
+
+# PATH Update
+PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH
+PATH=$PATH:.
+export PATH
+
+# PS1
+PS1="[\u@\h \w]\$ "
+
+#####################################################################
+# Functions or Utilities                                            #
+#####################################################################
+dir()
+{
+   count=1
+   TF=`ls -1F | grep -c "/$"`
+   if [ ${TF} -gt 0 ]; then
+      ((TF1=TF+1))
+      DirList=(`ls -1F | grep "/$" | tr '/' ' '`)
+      for i in ${DirList[*]}
+      do
+        echo "$count - ${DirList[((count - 1))]}"
+        ((count = count + 1))
+      done
+      echo "Please choose from the above options:"
+      read userchoice
+      if [ `echo ${userchoice} | grep -c "^[0-9]*$"` -eq 1 ]; then
+         if [ ${userchoice} -lt ${TF1} ]; then
+             cd ${DirList[((userchoice - 1))]}
+             ls -lrt;pwd
+         fi
+      else
+         echo "Your selection is NOT valid."
+         echo "You are in your current directory - `pwd`"
+      fi
+   else
+      echo "There are no directories with in your current directory - `pwd`"
+   fi
+}
+#####################################################################
+slinks()
+{
+# Checks and Displays the ls -alrt of links in the current directory
+  if [ $(ls -1F | grep -c "@$") -gt 0 ]; then
+     for i in $(ls -1F | grep "@$")
+     do
+       ls -alrt $(echo $i | cut -d'@' -f1)
+     done
+  else
+     echo "There are no links in this Directory"
+  fi
+}
+#####################################################################
+tsinfo()
+{
+  echo "\$(date '+%Y%m%d_%H%M%S')"
+  echo "$(date '+%Y%m%d_%H%M%S')"
+  echo
+  echo "###############################################"
+  echo "DayOfWeek = %a,  Month = %b, Day = %e, TimeZone = %Z, 4DigitYear = %Y"
+  echo "MonthDigit = %m, Day = %d, 2DigitYear = %y"
+  echo "Time = %T, Hour = %H, Minute = %M, Second= %S"
+  echo "###############################################"
+}
+ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
+#####################################################################
+lt()
+{
+   if [ $# -eq 1 ]; then
+       ls -lrt | tail -${1}
+   else
+       ls -lrt | tail -10
+   fi
+}
+#####################################################################
+lat()
+{
+   if [ $# -eq 1 ]; then
+       ls -alrt | tail -${1}
+   else
+       ls -alrt | tail -10
+   fi
+}
+#####################################################################
+lg()
+{
+   arguments=
+   arg=
+   if [ $# -eq 0 ]; then
+       echo "USAGE: lg abcd.txt"
+       echo "     : lg abcd.txt hello.txt good.txt dir1"
+   elif [ $# -eq 1 ]; then
+       ls -F | grep -i $1
+   else
+       arguments="$*"; arg="`echo $arguments | tr -s ' ' '|'`"; ls -F | grep -iE "$arg"
+   fi
+}
+#####################################################################
+lgg()
+{
+   if [ $# -eq 0 ]; then
+       echo "USAGE: lgg abcd.txt"
+       echo "     : lgg abcd.txt hello.txt good.txt dir1"
+   elif [ $# -eq 1 ]; then
+       ls -F | grep -i $1
+   else
+       mycommand="ls -F"
+       for i in $*
+       do
+         mycommand="$mycommand | grep -i $i "
+       done
+       eval $mycommand
+   fi
+}
+#####################################################################
+ltg()
+{
+   arguments=
+   arg=
+   if [ $# -eq 0 ]; then
+       echo "USAGE: ltg abcd.txt"
+       echo "     : ltg abcd.txt hello.txt good.txt dir1"
+   elif [ $# -eq 1 ]; then
+       ls -alrt | grep -i "${1}"
+   else
+       arguments="$*"; arg="`echo $arguments | tr -s ' ' '|'`"; ls -alrt | grep -iE "$arg"
+   fi
+}
+#####################################################################
+ltgg()
+{
+   if [ $# -eq 0 ]; then
+       echo "USAGE: lgg abcd.txt"
+       echo "     : lgg abcd.txt hello.txt good.txt dir1"
+   elif [ $# -eq 1 ]; then
+       ls -alrt | grep -i "${1}"
+   else
+       mycommand="ls -alrt"
+       for i in $*
+       do
+         mycommand="$mycommand | grep -i $i "
+       done
+       eval $mycommand
+   fi
+}
+#####################################################################
+# ips function
+ips()
+{
+  for i in $(/sbin/ifconfig -a | awk '{print $1}' | grep eth)
+  do
+    if [ $(/sbin/ifconfig -a | grep -A 1 "${i} " | grep -c "inet addr:") -eq 1 ]; then
+        my_ip=$(/sbin/ifconfig -a | grep -A 1 "${i} " | grep "inet addr:" | awk -F: '{print $2}' | cut -d' ' -f1)
+	    echo $i - $my_ip
+	fi
+  done
+}
+#####################################################################
+myfns()
+{
+   if [ $# -ne 1 ]; then
+      profile="$HOME/.bash_profile"
+   elif [ $# -eq 1 ]; then
+      profile="${1}"
+   fi
+   echo "#####################################################################"
+   echo "Functions in the \"$profile\" file are:"
+   echo "#####################################################################"
+   word_fn=$(grep -v "^#" ${profile} | grep "function " | grep '{' | cut -d' ' -f2 | sort)
+   brackets_fn=$(grep -v "^#" ${profile} | grep "()" | grep -v grep | cut -d'(' -f1 | sort)
+   count=1
+   for i in $(echo $word_fn $brackets_fn)
+   do
+     echo -n "$count - "
+     echo $i
+     ((count=count+1))
+   done | pr --columns 4 -T -W140
+   echo "#####################################################################"    
+}
+
+allfns()
+{
+  if [ $# -ne 1 ]; then
+     profile="$HOME/.bash_profile"
+  elif [ $# -eq 1 ]; then
+     profile="${1}"
+  fi
+  myfns ${profile}
+  for i in $(grep -E "\. \.|\. /|\. \~|source " ${profile} | awk '{print $2}')
+  do
+    myfns ${i}
+  done
+}
+#####################################################################
+fns()
+{
+   USER=$(whoami)
+   if [[ $# -eq 1 && -f $1 ]]; then
+        myfns ${1}
+   else
+      if [[ -f /etc/.generic_profile ]]; then
+	     echo "Generic Profile functions are:"
+         myfns "/etc/.generic_profile"
+	  fi
+      if [[ -f ${HOME}/.${USER}_profile ]]; then
+	     echo "$USER profile functions are:"
+         myfns "/home/${USER}/.${USER}_profile"
+	  fi
+	  if [[ -f ${HOME}/.aws_profile ]]; then
+		 echo "AWS Profile functions are:"
+         myfns ${HOME}/.aws_profile
+      fi
+	fi
+}
+
+lsf()
+{
+  fns $1
+}
+#####################################################################
+bkp()
+{
+    ts="`date '+%Y%m%d_%H%M%S'`"
+    if [ $# -eq 0 -o $# -gt 2 ]; then
+         echo "Usage: You need to provide the file/dir that you want to Backup, as first argument."
+         echo "And your second argument - optional - can be a special tag that you want to attach "
+    elif [ $# -eq 1 ]; then
+          if [ -d ${1} -o -f ${1} ]; then
+              if [ -d ${1} ]; then
+                 if [ `echo $1 | grep -c "/$"` -eq 1 ]; then
+                    dirToBkp=`echo $1 | cut -d/ -f1`
+					echo "Backing up ${dirToBkp} to ==> ${dirToBkp}_${ts}.tgz"
+                    tar cvf - ${dirToBkp} | gzip -9c > ${dirToBkp}_${ts}.tgz
+                 else
+				    echo "Backing up ${1} to ==> ${1}_${ts}.tgz"
+                    tar cvf - ${1} | gzip -9c > ${1}_${ts}.tgz
+                 fi
+              else
+			     echo "Backing up ${1} to ==> ${1}_${ts}"
+                 cp -p ${1} ${1}_${ts}
+              fi
+          else
+              echo "\"${1}\" is neither a directory nor a regular file"
+          fi
+    elif [ $# -eq 2 ]; then
+         if [ -d ${1} -o -f ${1} ]; then
+             if [ -d ${1} ]; then
+                if [ `echo $1 | grep -c "/$"` -eq 1 ]; then
+                   dirToBkp=`echo $1 | cut -d/ -f1`
+				   echo "Backing up ${dirToBkp} to ==> ${dirToBkp}_${2}.tgz"
+                   tar cvf - ${dirToBkp} | gzip -9c > ${dirToBkp}_${2}.tgz
+                else
+				   echo "Backing up ${1} to ==> ${1}_${2}.tgz"
+                   tar cvf - ${1} | gzip -9c > ${1}_${2}.tgz
+                fi
+             else
+			    echo "Backing up ${1} to ==> ${1}_${2}"
+                cp -p ${1} ${1}_${2}
+             fi
+         else
+             echo "\"${1}\" is neither a directory nor a regular file"
+          fi
+    fi
+    echo "###################################################"
+    if [ $# -gt 0 ]; then
+       ltg ${1}
+    fi
+}
+copy()
+{
+  bkp $*
+}
+#####################################################################
+move()
+{
+    ts="`date '+%Y%m%d_%H%M%S'`"
+    if [ $# -eq 0 -o $# -gt 2 ]; then
+         echo "Usage: You need to provide the file/dir that you want to move, as first argument."
+         echo "And your second argument - optional - can be a special tag that you want to attach "
+    elif [ $# -eq 1 ]; then
+          if [ -d ${1} -o -f ${1} ]; then
+              if [ -d ${1} ]; then
+                 if [ `echo $1 | grep -c "/$"` -eq 1 ]; then
+                    dirToBkp=`echo $1 | cut -d/ -f1`
+                    tar cvf - ${dirToBkp} | gzip -9c > ${dirToBkp}_${ts}.tgz
+					echo "Moving ${dirToBkp} to ==> ${dirToBkp}_${ts}"
+                    mv ${dirToBkp} ${dirToBkp}_${ts}
+                 else
+                    tar cvf - ${1} | gzip -9c > ${1}_${ts}.tgz
+					echo "Moving ${1} to ==> ${1}_${ts}"
+                    mv ${1} ${1}_${ts}
+                 fi
+              else
+			     echo "Moving ${1} to ==> ${1}_${ts}"
+                 mv ${1} ${1}_${ts}
+              fi
+          else
+              echo "\"${1}\" is neither a directory nor a regular file"
+          fi
+    elif [ $# -eq 2 ]; then
+          if [ -d ${1} -o -f ${1} ]; then
+              if [ -d ${1} ]; then
+                 if [ `echo $1 | grep -c "/$"` -eq 1 ]; then
+                    dirToBkp=`echo $1 | cut -d/ -f1`
+                    tar cvf - ${dirToBkp} | gzip -9c > ${dirToBkp}_${2}.tgz
+					echo "Moving ${dirToBkp} to ==> ${2}"
+                    mv ${dirToBkp} ${2}
+                 else
+                    tar cvf - ${1} | gzip -9c > ${1}_${2}.tgz
+					echo "Moving ${1} to ==> ${2}"
+                    mv ${1} ${2}
+                 fi
+              else
+			     echo "Moving ${1} to ==> ${2}"
+                 mv ${1} ${2}
+              fi
+          else
+              echo "\"${1}\" is neither a directory nor a regular file"
+          fi
+    fi
+    echo "###################################################"
+    if [ $# -gt 0 ]; then
+       ltg ${1}
+    fi
+}
+#####################################################################
+lstop() #arg_mem|cpu
+{
+  echo "ON HOST - $(hostname)"; echo
+  if [ "$1" = 'mem' ]; then
+     opt='rss'
+  elif [ "$1" = 'cpu' ]; then
+     opt=pcpu
+  fi
+  ps aux --sort -$opt |grep -v aux |grep -v grep |head -11 |while read -r line; do
+    echo $line |grep -q RSS
+    if [ $? = 0 ]; then
+       app='APP'
+       line=`echo $line |sed -E 's/(VSZ|RSS)/\1\(MB\)/g'`
+    else
+       app=`appget "$line" |cut -d: -f1`
+       vsz=`echo $line |awk '{print $5}'`; let vsz=vsz/1024
+       rss=`echo $line |awk '{print $6}'`; let rss=rss/1024
+       line=`echo $line |sed "s/[^ ]*/$vsz/"5 |sed "s/[^ ]*/$rss/"6`
+    fi
+    line=`echo $line |awk '{print $1,$2,$3,$4,$5,$6,$9,$10}'`
+    echo "$line $app"
+  done |\
+  column -t |cut -c1-`tput cols`
+  echo
+}
+
+#####################################################################
+topmem()
+{
+  lstop mem
+}
+
+#####################################################################
+topcpu()
+{
+  lstop cpu
+}
+#####################################################################
+sysspec()
+{
+  HN=`uname -n`
+  OS=`cat /etc/centos-release`
+  KN=`uname -r`
+  CC=`nproc --all`
+  CV=`cat /proc/cpuinfo |grep 'vendor' |head -1 |cut -d: -f2- |tr -s ' '`
+  CM=`cat /proc/cpuinfo |grep 'model name' |head -1 |cut -d: -f2- |tr -s ' '`
+  MM=`free -g |grep Mem |tr -s ' ' |cut -d' ' -f2`
+  let MM=MM+1
+  SW=`free -g |grep Swap |tr -s ' ' |cut -d' ' -f2`
+  let SW=SW+1
+  ID=`whoami`
+  UT=`uptime |sed 's/.*up //' |cut -d, -f1`
+  LA=`uptime |sed 's/.*age: //'`
+  DFA=`df -h / |tail -1 |tr -s ' ' |cut -d' ' -f4`
+  DFU=`df -h / |tail -1 |tr -s ' ' |cut -d' ' -f5`
+
+  echo "#################################################################"
+  printf "%s\t\t       %s\n" Host: "$HN"
+  printf "%s\t\t       %s\n" OS: "$OS"
+  printf "%s\t\t       %s\n" Kernel: "$KN"
+  echo -e "-----------------------------------------------------------------"
+  printf "%s\t      %s\n" "CPU Model:" "$CM"
+  lscpu
+  echo -e "-----------------------------------------------------------------"
+  printf "%s\t       %s\n" "System RAM:" "$MM Gb"
+  printf "%s\t       %s\n" "Swap Memory:" "$SW Gb"
+  echo "-----------------------------------------------------------------"
+  printf "%s\t\t       %s\n" User: "$ID"
+  printf "%s\t\t       %s\n" Uptime: "$UT"
+  printf "%s\t       %s\n" "Load Average:" "$LA"
+  printf "%s\t       %s %s\n" "Disk Space:" "$DFU used," "$DFA available"
+  echo "-----------------------------------------------------------------"
+  ips
+  echo "#################################################################"
+  echo
+}
+#####################################################################
+rhost()
+{
+  # Get proper IP address - flipping the octets.
+  # example.. flipping 8.247.184.61 to 61.184.247.8
+  # and doing a dns lookup for that IP.
+  if [ $# -eq 1 ]; then
+     first=$(echo $1 | cut -d'.' -f4)
+     second=$(echo $1 | cut -d'.' -f3)
+     third=$(echo $1 | cut -d'.' -f2)
+     fourth=$(echo $1 | cut -d'.' -f1)
+     my_ip="${first}.${second}.${third}.${fourth}"
+     host ${my_ip}
+  fi
+}
+#####################################################################
+check()
+{
+  hash nc 2>/dev/null && {
+    if [[ $# -eq 1 && -f ${1} ]]; then
+       for i in $(cat ${1})
+       do
+         domain=$(awk -F, '{print $1}')
+    	   port=$(awk -F, '{print $2}')
+    	   nc -w 2 -z $domain $port 2>/dev/null
+	     if [ $? -eq 0 ]; then
+	       echo "SUCCESS: Connected to $domain on port $port"
+	     else
+	       echo "ERROR  : Failed to connect to $domain on port $port"
+	     fi
+       done
+    elif [[ $# -eq 2 ]]; then
+       domain=${1}; port=${2}
+       nc -w 2 -z $domain $port 2>/dev/null
+	   if [ $? -eq 0 ]; then
+	     echo "SUCCESS: Connected to $domain on port $port"
+	   else
+	     echo "ERROR  : Failed to connect to $domain on port $port"
+	   fi
+    fi
+  }
+}
+#####################################################################

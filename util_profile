@@ -1,0 +1,764 @@
+#####################################################################
+# SCRIPT NAME: util_profile                                        #
+# DESCRIPTION: Utility Functions                                    #
+# AUTHOR: Chandra Munukutla - a list of functions                   #
+#####################################################################
+
+# Source file checks profile
+if [[ -f /etc/.file_checks_profile ]]; then source /etc/.file_checks_profile; fi
+ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
+#####################################################################
+ERROR=false
+check_for_error(){ if [ "${ERROR}" = "true" ]; then true; elif [ "${ERROR}" = "false" ]; then false; fi; }
+
+#####################################################################
+is_one_arg(){ 
+  if [[ $# -eq 1 ]]; then
+     true
+  else
+     false
+  fi
+}
+is_two_arg(){ 
+  if [[ $# -eq 2 ]]; then
+     true
+  else
+     false
+  fi
+}
+is_three_arg(){ 
+  if [[ $# -eq 2 ]]; then
+     true
+  else
+     false
+  fi
+}
+zeroArgsExit()
+{
+  if [[ $# -eq 0 ]]; then
+     echo "Zero Arguments provided to this script!"
+	 usage
+	 exit 1
+  fi
+}
+#####################################################################
+# Strip functions
+# Strip spaces
+strip_spaces(){ is_file ${1} && (sed 's/[ ]*//g' ${1}); }
+p_strip_spaces(){ echo $(</dev/stdin) | sed 's/[ ]*//g'; }
+i_strip_spaces(){ is_file ${1} && sed -i_$(ts) 's/[ ]*//g' ${1}; }
+##################
+# Strip tabs
+strip_tabs(){ is_file ${1} && (sed 's/[\t]*//g' ${1}); }
+p_strip_tabs(){ echo $(</dev/stdin) | sed 's/[\t]*//g'; }
+i_strip_tabs(){ is_file ${1} && sed -i_$(ts) 's/[\t]*//g' ${1}; }
+##################
+# Strip spaces and tabs
+strip_spaces_tabs(){ is_file ${1} && (sed 's/[ \t]*//g' ${1}); }
+p_strip_spaces_tabs(){ echo $(</dev/stdin) | sed 's/[ \t]*//g'; }
+i_strip_spaces_tabs(){ is_file ${1} && sed -i_$(ts) 's/[ \t]*//g' ${1}; }
+##################
+# Strip leading and trailing spaces and tabs
+strip_leading_trailing_spaces_tabs(){ is_file ${1} && (cat ${1} | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' ); }
+p_strip_leading_trailing_spaces_tabs(){ echo $(</dev/stdin) | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g'; }
+i_strip_leading_trailing_spaces_tabs(){ is_file ${1} && sed -i_$(ts) -e 's/^[ \t]*//g' -e 's/[ \t]*$//g' ${1}; }
+##################
+strip_empty_lines(){ is_file ${1} && (grep -v '^$' ${1}); }
+i_strip_empty_lines(){ is_file ${1} && sed -i_$(ts) '/^$/d' ${1};}
+##################
+strip_header(){ is_file ${1} && (sed '1d' ${1}); }
+i_strip_header(){ is_file ${1} && sed -i_$(ts) '1d' ${1}; }
+##################
+strip_footer(){ is_file ${1} && (sed '$d' ${1}); }
+i_strip_footer(){ is_file ${1} && sed -i_$(ts) '$d' ${1}; }
+##################
+# Strip dollar signs
+strip_dollar(){ is_file ${1} && sed 's/\$//g' ${1}; }
+p_strip_dollar(){ echo $(</dev/stdin) | sed 's/\$//g'; }
+i_strip_dollar(){ is_file ${1} && sed -i_$(ts) 's/\$//g' ${1}; }
+##################
+# Strip commas
+strip_comma(){ is_file ${1} && sed 's/,//g' ${1}; }
+p_strip_comma(){ echo $(</dev/stdin) | sed 's/,//g'; }
+i_strip_comma(){ is_file ${1} && copy ${1} && sed -i_$(ts) 's/,//g' ${1}; }
+#####################################################################
+#####################################################################
+# New Line to something onto Stdout - functions
+nl_to_space() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' ' ' | sed -e 's/ $/\n/g'); }
+nl_to_comma() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' ',' | sed -e 's/,$/\n/'); }
+to_csv() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' ',' | sed -e 's/,$/\n/'); }
+nl_to_semicolon() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' ';' | sed -e 's/;$/\n/g'); }
+nl_to_colon() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' ':' | sed -e 's/:$/\n/g'); }
+nl_to_tab() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' '\t' | sed -e 's/\t$/\n/g'); }
+nl_to_pipe() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' '|' | sed -e 's/|$/\n/g'); }
+to_pipe() { is_file ${1} && (cat ${1} | /usr/bin/tr '\n' '|' | sed -e 's/|$/\n/g'); }
+#####################################################################
+# functions for space and tab handling
+rm_leading_spaces(){ is_file ${1} && (sed 's/^[ ]*//g' ${1}); }
+rm_trailing_spaces(){ is_file ${1} && (sed 's/[ ]*$//g' ${1}); }
+rm_leading_trailing_spaces(){ is_file ${1} && (cat ${1} | sed 's/^[ ]*//g' | sed 's/[ ]*$//g' ); }
+
+n_spaces_to_one_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr -s ' ' ' ' | sed -e 's/,$/\n/g'); }
+
+rm_leading_tabs(){ is_file ${1} && (sed 's/^[\t]*//g' ${1}); }
+rm_trailing_tabs(){ is_file ${1} && (sed 's/[\t]*$//g' ${1}); }
+rm_leading_trailing_spaces_tabs(){ is_file ${1} && (cat ${1} | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' ); }
+
+space_to_comma(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' ',' | sed -e 's/,$/\n/g'); }
+space_to_semicolon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' ';' | sed -e 's/;$/\n/g'); }
+space_to_colon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' ':' | sed -e 's/:$/\n/g'); }
+space_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' '\n'); }
+space_to_tab(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' '\t'| sed -e 's/\t$/\n/g'); }
+space_to_pipe(){ is_file ${1} && (cat ${1} | /usr/bin/tr ' ' '|'); }
+#####################################################################
+# functions to work with comma
+comma_to_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' ' '); }
+comma_to_semicolon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' ';'); }
+comma_to_colon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' ':'); }
+comma_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' '\n'); }
+comma_to_tab(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' '\t'); }
+comma_to_pipe(){ is_file ${1} && (cat ${1} | /usr/bin/tr ',' '|'); }
+#####################################################################
+# functions to work with semicolon
+semicolon_to_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' ' '); }
+semicolon_to_comma(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' ','); }
+semicolon_to_colon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' ':'); }
+semicolon_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' '\n'); }
+semicolon_to_tab(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' '\t'); }
+semicolon_to_pipe(){ is_file ${1} && (cat ${1} | /usr/bin/tr ';' '|'); }
+#####################################################################
+# functions to work with colon
+colon_to_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' ' '); }
+colon_to_comma(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' ','); }
+colon_to_semicolon(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' ';'); }
+colon_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' '\n'); }
+colon_to_tab(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' '\t'); }
+colon_to_pipe(){ is_file ${1} && (cat ${1} | /usr/bin/tr ':' '|'); }
+#####################################################################
+# functions to work with tab
+tab_to_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' ' '); }
+tab_to_comma(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' ','); }
+tab_to_semicolon(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' ';'); }
+tab_to_colon(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' ':'); }
+tab_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' '\n'); }
+tab_to_pipe(){ is_file ${1} && (cat ${1} | /usr/bin/tr '\t' '|'); }
+#####################################################################
+# functions to work with pipe
+pipe_to_space(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' ' '); }
+pipe_to_comma(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' ','); }
+pipe_to_semicolon(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' ';'); }
+pipe_to_colon(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' ':'); }
+pipe_to_nl(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' '\n'); }
+pipe_to_tab(){ is_file ${1} && (cat ${1} | /usr/bin/tr '|' '\t'); }
+#####################################################################
+# replace first character with second character in a file
+replace_firstChar_with_secondChar() { is_file ${1} && (cat ${1} | /usr/bin/tr -s "${2}" "${3}"); }
+i_replace_firstChar_with_secondChar(){ is_file ${1} && (
+   if [[ ${2} == '|' || ${3} == "|" ]]; then
+      sed -i_$(ts) "s/${2}/${3}/g" ${1}
+   else
+      sed -i_$(ts) "s|${2}|${3}|g" ${1}
+   fi
+   )
+}
+#####################################################################
+to_lower(){ is_file ${1} && (cat ${1} | /usr/bin/tr '[A-Z]' '[a-z]'); }
+to_upper(){ is_file ${1} && (cat ${1} | /usr/bin/tr '[a-z]' '[A-Z]'); }
+
+rm_empty_lines(){ is_file ${1} && (grep -v '^$' ${1}); }
+
+#####################################################################
+# Printing specific fns
+# print file without comments
+print_without_comments(){ is_file ${1} && (grep -v '^#' ${1}); }
+# Print non-printable characters (unicode ones)
+non_printable(){ is_file ${1} && (sed -n 'l' ${1}); }
+# Print from a file between specific lines
+print_lines(){ is_file ${1} && (sed -n "$2,$3p" ${1}); }
+#####################################################################
+#####################################################################
+#####################################################################
+# functions for space handling
+p_rm_leading_spaces(){ echo $(</dev/stdin) | sed 's/^[ ]*//g'; }
+p_rm_trailing_spaces(){ echo $(</dev/stdin) | sed 's/[ ]*$//g'; }
+p_rm_leading_trailing_spaces(){ echo $(</dev/stdin) | sed 's/^[ ]*//g' | sed 's/[ ]*$//g'; }
+
+p_n_spaces_to_one_space(){ echo $(</dev/stdin) | tr -s ' ' ' '; }
+
+p_rm_leading_tabs(){ echo $(</dev/stdin) | sed 's/^[\t]*//g' ${1}; }
+p_rm_trailing_tabs(){ echo $(</dev/stdin) | sed 's/[\t]*$//g' ${1}; }
+p_rm_leading_trailing_spaces_tabs(){ echo $(</dev/stdin) | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g'; }
+
+p_space_to_comma(){ echo $(</dev/stdin) | sed 's/ /,/g'; }
+p_space_to_semicolon(){ echo $(</dev/stdin) | sed 's/ /;/g'; }
+p_space_to_colon(){ echo $(</dev/stdin) | sed 's/ /:/g'; }
+p_space_to_nl(){ echo $(</dev/stdin) | sed 's/ /\n/g'; }
+p_space_to_tab(){ echo $(</dev/stdin) | sed 's/ /\t/g'; }
+p_space_to_pipe(){ echo $(</dev/stdin) | sed 's/ /|/g'; }
+#####################################################################
+# functions to work with comma
+p_comma_to_space(){ echo $(</dev/stdin) | sed 's/,/ /g'; }
+p_comma_to_semicolon(){ echo $(</dev/stdin) | sed 's/,/;/g'; }
+p_comma_to_colon(){ echo $(</dev/stdin) | sed 's/,/:/g'; }
+p_comma_to_nl(){ echo $(</dev/stdin) | sed 's/,/\n/g'; }
+p_comma_to_tab(){ echo $(</dev/stdin) | sed 's/,/\t/g'; }
+p_comma_to_pipe(){ echo $(</dev/stdin) | sed 's/,/|/g'; }
+#####################################################################
+# functions to work with semicolon
+p_semicolon_to_space(){ echo $(</dev/stdin) | sed 's/;/ /g'; }
+p_semicolon_to_comma(){ echo $(</dev/stdin) | sed 's/;/,/g'; }
+p_semicolon_to_colon(){ echo $(</dev/stdin) | sed 's/;/:/g'; }
+p_semicolon_to_nl(){ echo $(</dev/stdin) | sed 's/;/\n/g'; }
+p_semicolon_to_tab(){ echo $(</dev/stdin) | sed 's/;/\t/g'; }
+p_semicolon_to_pipe(){ echo $(</dev/stdin) | sed 's/;/|/g'; }
+#####################################################################
+# functions to work with colon
+p_colon_to_space(){ echo $(</dev/stdin) | sed 's/:/ /g'; }
+p_colon_to_comma(){ echo $(</dev/stdin) | sed 's/:/,/g'; }
+p_colon_to_semicolon(){ echo $(</dev/stdin) | sed 's/:/;/g'; }
+p_colon_to_nl(){ echo $(</dev/stdin) | sed 's/:/\n/g'; }
+p_colon_to_tab(){ echo $(</dev/stdin) | sed 's/:/\t/g'; }
+p_colon_to_pipe(){ echo $(</dev/stdin) | sed 's/:/|/g'; }
+#####################################################################
+# functions to work with tab
+p_tab_to_space(){ echo $(</dev/stdin) | sed 's/\t/ /g'; }
+p_tab_to_comma(){ echo $(</dev/stdin) | sed 's/\t/,/g'; }
+p_tab_to_semicolon(){ echo $(</dev/stdin) | sed 's/\t/;/g'; }
+p_tab_to_colon(){ echo $(</dev/stdin) | sed 's/\t/:/g'; }
+p_tab_to_nl(){ echo $(</dev/stdin) | sed 's/\t/\n/g'; }
+p_tab_to_pipe(){ echo $(</dev/stdin) | sed 's/\t/|/g'; }
+#####################################################################
+# functions to work with pipe
+p_pipe_to_space(){ echo $(</dev/stdin) | sed 's/|/ /g'; }
+p_pipe_to_comma(){ echo $(</dev/stdin) | sed 's/|/,/g'; }
+p_pipe_to_semicolon(){ echo $(</dev/stdin) | sed 's/|/;/g'; }
+p_pipe_to_colon(){ echo $(</dev/stdin) | sed 's/|/:/g'; }
+p_pipe_to_nl(){  echo $(</dev/stdin) | sed 's/|/\n/g'; }
+p_pipe_to_tab(){  echo $(</dev/stdin) | sed 's/|/\t/g'; }
+#####################################################################
+p_to_lower(){  echo $(</dev/stdin) | /usr/bin/tr '[A-Z]' '[a-z]'; }
+p_to_upper(){ echo $(</dev/stdin) | /usr/bin/tr '[a-z]' '[A-Z]'; }
+# remove spaces and tabs
+
+p_rm_leading_spaces(){ echo $(</dev/stdin) | sed 's/[^ ]*//g'; }
+p_rm_trailing_spaces(){ echo $(</dev/stdin) | sed 's/[ $]*//g'; }
+p_rm_spaces(){ echo $(</dev/stdin) | sed 's/[ ]*//g'; }
+p_rm_spaces_tabs(){ echo $(</dev/stdin) | sed 's/[ \t]*//g'; }
+p_rm_leading_tabs(){ echo $(</dev/stdin) | sed 's/[^\t]*//g'; }
+p_rm_trailing_tabs(){ echo $(</dev/stdin) | sed 's/[\t$]*//g'; }
+p_rm_tabs(){ echo $(</dev/stdin) | sed 's/[\t]*//g'; }
+p_rm_leading_trailing_spaces_tabs(){ echo $(</dev/stdin) | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g' ; }
+#####################################################################
+# Functions - New Line to something in-line replacement
+i_nl_to_space() { is_file ${1} && ( perl -i_$(ts) -pe 's|\n| |g;' ${1}; perl -i -pe 's| $|\n|g;' ${1} ); }
+i_nl_to_comma() { is_file ${1} && ( perl -i_$(ts) -pe 's|\n|,|g;' ${1}; perl -i -pe 's|,$|\n|g;' ${1} ); }
+i_nl_to_semicolon() { is_file ${1} && ( perl -i_$(ts) -pe 's|\n|;|g;' ${1}; perl -i -pe 's|;$|\n|g;' ${1} ); }
+i_nl_to_colon() { is_file ${1} && ( perl -i_$(ts) -pe 's|\n|:|g;' ${1}; perl -i -pe 's|:$|\n|g;' ${1} ); }
+i_nl_to_tab() { is_file ${1} && ( perl -i_$(ts) -pe 's|\n|\t|g;' ${1}; perl -i -pe 's|\t$|\n|g;' ${1} ); }
+i_nl_to_pipe() { is_file ${1} && ( perl -i_$(ts) -pe 's/\n/|/g;' ${1}; perl -i -pe 's/|$/\n/g;' ${1} ); }
+#####################################################################
+# functions for space handling - in-line replacement
+i_rm_leading_spaces(){ is_file ${1} && ( sed -i_$(ts) 's/^[ ]*//g' ${1} ); }
+i_rm_trailing_spaces(){ is_file ${1} && ( sed -i_$(ts) 's/[ ]*$//g' ${1} ); }
+i_rm_leading_trailing_spaces(){ is_file ${1} && ( perl -i_$(ts) -pe 's|^[ ]*||g;' ${1}; perl -i -pe 's|[ ]*$||g;' ${1} ); }
+i_n_spaces_to_one_space(){ is_file ${1} && ( perl -i_$(ts) -pe 's/\h+/ /g;' ${1} ); }
+i_space_to_comma(){ is_file ${1} && ( perl -i_$(ts) -pe 's| |,|g;' ${1}; perl -i -pe 's|,$|\n|g;' ${1} ); }
+i_space_to_semicolon(){ is_file ${1} && ( sed -i_$(ts) -e 's/ /;/g' -e 's/;$/\n/g' ${1} ); }
+i_space_to_colon(){ is_file ${1} && ( sed -i_$(ts) -e 's/ /:/g' -e 's/:$/\n/g' ${1} ); }
+i_space_to_nl(){ is_file ${1} && ( sed -i_$(ts) 's/ /\n/g' ${1} ); }
+i_space_to_tab(){ is_file ${1} && ( sed -i_$(ts) -e 's/ /\t/g' -e 's/\t$/\n/g' ${1} ); }
+i_space_to_pipe(){ is_file ${1} && ( sed -i_$(ts) -e 's/ /|/g' -e 's/|$/\n/g' ${1} ); }
+#####################################################################
+# functions to work with comma - in-line replacement
+i_comma_to_space(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/ /g' ${1} ); }
+i_comma_to_semicolon(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/;/g' ${1} ); }
+i_comma_to_colon(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/:/g' ${1} ); }
+i_comma_to_nl(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/\n/g' ${1} ); }
+i_comma_to_tab(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/\t/g' ${1} ); }
+i_comma_to_pipe(){ is_file ${1} && ( sed -i_$(ts) -e 's/,/|/g' ${1} ); }
+#####################################################################
+# functions to work with semicolon - in-line replacement
+i_semicolon_to_space(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/ /g' ${1} ); }
+i_semicolon_to_comma(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/,/g' ${1} ); }
+i_semicolon_to_colon(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/:/g' ${1} ); }
+i_semicolon_to_nl(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/\n/g' ${1} ); }
+i_semicolon_to_tab(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/\t/g' ${1} ); }
+i_semicolon_to_pipe(){ is_file ${1} && ( sed -i_$(ts) -e 's/;/|/g' ${1} ); }
+#####################################################################
+# functions to work with colon
+i_colon_to_space(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/ /g' ${1} ); }
+i_colon_to_comma(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/,/g' ${1} ); }
+i_colon_to_semicolon(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/;/g' ${1} ); }
+i_colon_to_nl(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/\n/g' ${1} ); }
+i_colon_to_tab(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/\t/g' ${1} ); }
+i_colon_to_pipe(){ is_file ${1} && ( sed -i_$(ts) -e 's/:/|/g' ${1} ); }
+#####################################################################
+# functions to work with tab
+i_tab_to_space(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/ /g' ${1} ); }
+i_tab_to_comma(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/,/g' ${1} ); }
+i_tab_to_semicolon(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/;/g' ${1} ); }
+i_tab_to_colon(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/:/g' ${1} ); }
+i_tab_to_nl(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/\n/g' ${1} ); }
+i_tab_to_pipe(){ is_file ${1} && ( sed -i_$(ts) -e 's/\t/|/g' ${1} ); }
+#####################################################################
+# functions to work with pipe
+i_pipe_to_space(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/ /g' ${1} ); }
+i_pipe_to_comma(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/,/g' ${1} ); }
+i_pipe_to_semicolon(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/;/g' ${1} ); }
+i_pipe_to_colon(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/:/g' ${1} ); }
+i_pipe_to_nl(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/\n/g' ${1} ); }
+i_pipe_to_tab(){ is_file ${1} && ( sed -i_$(ts) -e 's/|/\t/g' ${1} ); }
+#####################################################################
+i_to_lower(){ is_file ${1} && ( perl -i_$(ts) -pe 'tr/A-Z/a-z/' ${1} ); }
+i_to_upper(){ is_file ${1} && ( perl -i_$(ts) -pe 'tr/a-z/A-Z/' ${1} ); }
+i_rm_empty_lines(){ is_file ${1} && ( sed -i_$(ts) '/^$/d' ${1} ); }
+
+# remove spaces and tabs
+i_rm_spaces_tabs(){ is_file ${1} && ( sed -i_$(ts) 's/[ \t]*//g' ${1} ); }
+
+i_rm_leading_tabs(){ is_file ${1} && ( sed -i_$(ts) 's/^[\t]*//g' ${1} ); }
+i_rm_trailing_tabs(){ is_file ${1} && ( sed -i_$(ts) 's/[\t]*$//g' ${1} ); }
+i_rm_leading_trailing_spaces_tabs(){ is_file ${1} && ( sed -i_$(ts) -e 's/^[ \t]*//g' -e 's/[ \t]*$//g' ${1} ); }
+#####################################################################
+#Random - 8 characters
+rstring(){ cat /proc/sys/kernel/random/uuid | cut -d'-' -f1; }
+#####################################################################
+rand()
+{
+  if [ $# -eq 0 ]; then
+     echo "8 Character Random string  = $(cat /proc/sys/kernel/random/uuid | cut -d'-' -f1)"
+     echo "32 Character Random string = $(cat /proc/sys/kernel/random/uuid | sed 's/-//g')"
+  else
+     echo "${1} Character Random string = $(cat /proc/sys/kernel/random/uuid | sed 's/-//g' | cut -c1-${1})"
+  fi
+}
+#####################################################################
+#grep for stuff in history
+hg()
+{
+  if [ $# -eq 1 ]; then
+     history | grep ${1} | tr -s ' ' | cut -d' ' -f7- | sort -u
+  else
+     history
+  fi
+}
+#####################################################################
+sum()
+{
+  is_file ${1} && \
+  (
+    val=0
+    for i in $(cat $1 | p_strip_dollar | p_strip_comma)
+    do
+      val="${val}+${i}"
+    done
+    result=$(echo ${val} | bc -l)
+    echo "Sum = $result"
+  )
+}
+#####################################################################
+p_sum()
+{
+    val=0
+    for i in $(echo $(</dev/stdin) | p_strip_dollar | p_strip_comma)
+    do
+      val="${val}+${i}"
+    done
+    result=$(echo ${val} | bc -l)
+    echo "Sum = $result"
+}
+#####################################################################
+#####################################################################
+scriptSignature(){
+ is_file ${1} && ( \
+   hn=$(uname -n)
+   scriptDir=$(dirname ${1})
+   scriptName=$(basename ${1})
+   if [ ${scriptDir} = '.' ]; then
+    scriptDir=$(pwd)
+   fi
+   scriptSign=$scriptDir/$scriptName
+   echo "####################################################################################################"
+   echo "Script Signature: $hn:$scriptSign"
+   echo "####################################################################################################"
+  )
+}
+#####################################################################
+rm_double_quotes(){ is_file ${1} && ( sed 's/"//g' ${1} ); }
+p_rm_double_quotes(){ echo $(</dev/stdin) | sed 's/"//g'; }
+i_rm_double_quotes(){ is_file ${1} && sed -i_$(ts) 's/"//g' ${1}; }
+#####################################################################
+rm_single_quotes(){ is_file ${1} && sed "s/'//g" ${1}; }
+p_rm_single_quotes(){ echo $(</dev/stdin) | sed "s/'//g"; }
+i_rm_single_quotes(){ is_file ${1} && sed -i_$(ts) "s/'//g" ${1}; }
+#####################################################################
+is_number_file()
+{
+  is_file ${1} && (
+    for i in $(rm_leading_trailing_spaces_tabs ${1})
+    do
+      if ! [[ "${i}" =~ ^[0-9]+$ ]]; then
+         echo "ERROR: ${i} - is NOT a number"
+         break
+      fi
+    done
+  )
+}
+is_number()
+{
+  if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${1} - is NOT a number"
+     break
+  fi
+}
+p_is_number()
+{
+  for i in $(echo $(</dev/stdin))
+  do
+    if ! [[ "${i}" =~ ^[0-9]+$ ]]; then
+       echo "ERROR: ${i} - is NOT a number"
+       break
+    fi
+  done
+}
+is_digit()
+{
+  if [[ "${1}" =~ ^[0-9]+$ ]]; then
+     true
+  else
+     false
+  fi
+}
+p_is_digit()
+{
+  i="$(echo $(</dev/stdin))"
+  if [[ "${i}" =~ ^[0-9]+$ ]]; then
+     true
+  else
+     false
+  fi
+}
+#####################################################################
+p_char_count()
+{
+# echo "Char \"${1}\" Count = $(echo $(</dev/stdin) | grep -io "${1}" | grep -c . )"
+  echo "$(echo $(</dev/stdin) | grep -io "${1}" | grep -c . )"
+}
+#####################################################################
+str_len(){ echo ${#1}; }
+#####################################################################
+line_count(){ is_file $1 && ( wc -l ${1} | cut -d' ' -f1 ); }
+#####################################################################
+my_counter=0
+inc_counter(){ ((my_counter = my_counter + 1)); }
+dec_counter(){ ((my_counter = my_counter - 1)); }
+#####################################################################
+choose()
+{
+  my_counter=1
+  userOptions=($*)
+  userChose=
+  lengthOfOptionsArray="${#userOptions[@]}"
+  echo "Please choose from the below Options: "
+  for i in ${userOptions[*]}
+  do
+    echo "$my_counter - ${userOptions[((my_counter - 1))]}"
+    inc_counter
+  done
+  echo -n "Your choice is: "
+  read userChoice
+  if [ $(echo ${userChoice} | grep -c "^[0-9]*$") -eq 1 ]; then
+      if [ ${userChoice} -le ${lengthOfOptionsArray} ]; then
+#         echo "${userOptions[((userChoice - 1))]}"
+         userChose="${userOptions[((userChoice - 1))]}"
+      else
+         echo "Your selection is NOT valid." 1>&2
+         echo "Exiting now.." 1>&2
+         exit 1
+      fi
+  else
+      echo "Your selection is NOT valid." 1>&2
+      echo "Exiting now.." 1>&2
+      exit 1
+  fi
+}
+#####################################################################
+phone_number()
+{
+  if [ $# -eq 1 ]; then
+     ph_temp=$(echo ${1} | sed 's/[^0-9]*//g')
+     ph_temp=${ph_temp: -10}
+     if [[ -z ${ph_temp} ]]; then
+        phone=""
+     elif [[ ! -z ${ph_temp} ]]; then
+        area_code=$(echo ${ph_temp} | cut -c1-3)
+        exchange=$(echo ${ph_temp} | cut -c4-6)
+        phNumber=$(echo ${ph_temp} | cut -c7-)
+        phone="(${area_code}) ${exchange}-${phNumber}"
+        echo "${phone}"
+     fi
+  elif [ $# -eq 0 ]; then
+     echo "PH_EMPTY"
+  elif [ $# -gt 1 ]; then
+     echo "ERROR"
+  fi
+}
+#####################################################################
+state_val()
+{
+  declare -A states=( [alabama]="AL" [alaska]="AK" [arizona]="AZ" [arkansas]="AR" [california]="CA" [colorado]="CO"
+                      [connecticut]="CT" [delaware]="DE" [florida]="FL" [georgia]="GA" [hawaii]="HI" [idaho]="ID"
+                      [illinois]="IL" [indiana]="IN" [iowa]="IA" [kansas]="KS" [kentucky]="KY" [louisiana]="LA"
+                      [maine]="ME" [maryland]="MD" [massachusetts]="MA" [michigan]="MI" [minnesota]="MN" [mississippi]="MS"
+                      [missouri]="MO" [montana]="MT" [nebraska]="NE" [nevada]="NV" [new hampshire]="NH" [new jersey]="NJ"
+                      [new mexico]="NM" [new york]="NY" [north carolina]="NC" [north dakota]="ND" [ohio]="OH"
+                      [oklahoma]="OK" [oregon]="OR" [pennsylvania]="PA" [rhode island]="RI" [south carolina]="SC"
+                      [south dakota]="SD" [tennessee]="TN" [texas]="TX" [utah]="UT" [vermont]="VT" [virginia]="VA"
+                      [washington]="WA" [west virginia]="WV" [wisconsin]="WI" [wyoming]="WY" [american Samoa]="AS"
+                      [district of columbia]="DC" [federated states of micronesia]="FM" [guam]="GU" [marshall islands]="MH"
+                      [northern mariana islands]="MP" [palau]="PW" [puerto rico]="PR" [virgin islands]="VI"
+                    )
+  declare -a state_abr=(AK AL AR AS AZ CA CO CT DC DE FL FM GA GU HI IA ID IL IN KS KY LA MA MD ME MH MI MN MO MP MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR PW RI SC SD TN TX UT VA VI VT WA WI WV WY)
+  
+  if [[ $# -eq 0 ]]; then
+     echo "ERROR"
+  elif [[ $# -eq 1 && ${#1} -eq 2 ]]; then
+     state_input="$(echo "${1}" | p_to_upper)"
+     if [[ ! " ${state_abr[@]} " =~ " ${state_input} " ]]; then
+	    echo "ERROR"
+	 else
+	    echo ${1}
+	 fi
+  else
+     from_input="$(echo "${*}" | p_to_lower)"
+     from_states_array=${states[${from_input}]}
+     
+     if [[ ! -z ${from_states_array} ]]; then
+         echo "${from_states_array}"
+     else
+         echo "${*}"
+     fi
+  fi
+}
+#####################################################################
+dns()
+{
+  if [ $# -eq 1 -a -f ${1} ]; then
+      for i in $(cat ${1}  |grep -v "^#")
+      do              
+        host $i
+      done
+  else
+     for i in $*
+     do             
+       host $i
+     done
+  fi
+}
+#####################################################################
+sleeping()
+{
+  if [[ "${1}" =~ ^[0-9]+$ ]]; then
+     echo "Sleeping for $1 seconds"
+     for i in $(seq 1 $1)
+     do
+       sleep 1
+       echo -n ". "
+     done
+     echo
+  fi
+}
+#####################################################################
+# Try something a specific number of times
+# try 5 10 ls -alrt
+# try 5 times with 10 second sleep every time
+# execute 'ls -alrt' and check for exit status
+# if exit status is NON-Zero, then try till we reach 5 tries.
+# if exit status is success, then break the loop.
+# Example: try 5 5 curl -f -s https://www.google.com/goooo
+try()
+{
+  if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${1} - is NOT a number"
+     echo "Trying this 1 time.."
+     count=1
+  else
+     count=${1}
+  fi
+  if ! [[ "${2}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${2} - is NOT a number"
+     echo "Sleep seconds is defaulting to 3"
+     sleepSeconds=3
+  else
+     sleepSeconds=${2}
+  fi
+
+  #echo "INFO: Trying this $count number of times.."
+  shift
+  shift
+  for i in $(seq 1 $count)
+  do
+    echo "Trying below command - $i time:"
+    echo "${*}"
+    ${*}
+    if [[ $? -eq 0 ]]; then
+       break
+    else
+##	   sleep ${sleepSeconds}  
+       # we can use sleeping function to print dots
+       sleeping ${sleepSeconds}
+       continue
+    fi
+  done
+}
+#####################################################################
+# function like telnet to check connectivity (using netcat)
+check()
+{
+  hash nc 2>/dev/null && {
+    if [[ $# -eq 1 && -f ${1} ]]; then
+       for i in $(cat ${1})
+       do
+         domain=$(awk -F, '{print $1}')
+    	   port=$(awk -F, '{print $2}')
+    	   nc -w 2 -z $domain $port 2>/dev/null
+	     if [ $? -eq 0 ]; then
+	       echo "SUCCESS: Connected to $domain on port $port"
+	     else
+	       echo "ERROR  : Failed to connect to $domain on port $port"
+	     fi
+       done
+    elif [[ $# -eq 2 ]]; then
+       domain=${1}; port=${2}
+       nc -w 2 -z $domain $port 2>/dev/null
+	   if [ $? -eq 0 ]; then
+	     echo "SUCCESS: Connected to $domain on port $port"
+	   else
+	     echo "ERROR  : Failed to connect to $domain on port $port"
+	   fi
+    fi
+  } || echo "NetCat NOT Found on this system!"
+}
+#####################################################################
+# java process detail
+jd()
+{
+  is_one_arg $* && is_digit ${1} && {
+    for i in $(ps -ef | grep $1 | grep -v grep)
+    do
+      ((count = count +1))
+      echo "ITEM $count = $i"
+    done
+  }
+}
+#####################################################################
+myjps()
+{
+  hash jps 2>/dev/null && {
+      echo "jps from java"
+      jps $*
+  } || {
+      ps -ef | grep java | grep -v grep | awk '{print $1,$2,$(NF-1),$NF}'
+  }
+}
+#####################################################################
+to_single_quote()
+{
+  is_file ${1} && {
+    for i in $(cat $1)
+    do
+      echo "'${i}'"
+    done
+  }
+}
+to_double_quote()
+{
+  is_file ${1} && {
+    for i in $(cat $1)
+    do
+      echo "\"${i}\""
+    done
+  }
+}
+to_single_quote_csv()
+{
+  is_file ${1} && {
+    temp_file=/tmp/temp_$(ts)
+    touch $temp_file
+    for i in $(cat $1)
+    do
+      echo -n "'${i}'," >> $temp_file
+    done
+    cat $temp_file | sed 's/,$/\n/g'
+    rm $temp_file
+  }
+}
+to_double_quote_csv()
+{
+  is_file ${1} && {
+    temp_file=/tmp/temp_$(ts)
+    touch $temp_file
+    for i in $(cat $1)
+    do
+      echo -n "\"${i}\"," >> $temp_file
+    done
+    cat $temp_file | sed 's/,$/\n/g'
+    rm $temp_file
+  }
+}
+#####################################################################
+to_brackets()
+{
+  is_file ${1} && {
+    temp_file=/tmp/temp_$(ts)
+    touch $temp_file
+    for i in $(cat $1)
+    do
+      echo "[${i}]" >> $temp_file
+    done
+    cat $temp_file
+    rm $temp_file
+  }
+}
+#####################################################################
+to_braces()
+{
+  is_file ${1} && {
+    temp_file=/tmp/temp_$(ts)
+    touch $temp_file
+    for i in $(cat $1)
+    do
+      echo "{${i}}" >> $temp_file
+    done
+    cat $temp_file
+    rm $temp_file
+  }
+}
+#####################################################################
+## example: in_list $* && echo "Success" || echo "TEST FAILED"
+## This will check if the first argument is present in the rest of the arguments list.
+##
+## typically useful to validate user input.
+## echo "user input:"
+## read user_input
+## valid_items="dev qa uat prod"
+## in_list $user_input $valid_items && echo "Success" || echo "TEST FAILED" 
+##
+in_list()
+{
+  SUCCESS=false
+  first_arg=${1}
+  shift
+  for i in $*
+  do
+    if [[ "${first_arg}" == "${i}" ]]; then
+        SUCCESS=true
+        break
+    fi
+  done
+  if [[ "${SUCCESS}" == "false" ]]; then
+     echo "ERROR: \"${first_arg}\" is NOT in the list: $*"
+     return 1
+  fi
+}
+#####################################################################

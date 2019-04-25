@@ -1,0 +1,59 @@
+##########################################################################################
+# SCRIPT NAME: tomcat_profile
+# DESCRIPTION: Utility Functions
+# AUTHOR: Chandra Munukutla                       
+##########################################################################################
+
+# Source Generic Profile
+if [ -f /etc/.generic_profile ]; then source /etc/.generic_profile; fi
+# Source Util Profile
+if [ -f /etc/.util_profile ]; then source /etc/.util_profile; fi
+
+PATH=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.191.b12-0.amzn2.x86_64/jre/bin:$PATH
+export PATH
+
+alias cs='cd /app/script; clear; pwd; ls'
+
+PS1="[\u@\h \w]\$ "
+
+#####################################################################
+apps()
+{
+  if [[ $# -eq 1 ]]; then
+       echo "App Instances Running:"
+       echo "#################################"
+       ps -ef | grep java | grep org.apache.catalina.startup.Bootstrap | grep Dcatalina.base= | grep $1 | grep -v grep | awk 'BEGIN { FS = "catalina.base="} { print $2 }'| awk '{print $1}' | awk -F'/' '{ print $NF}'
+	   ps -ef | grep java | grep "\-jar" | grep $1 | grep -v grep | awk '{print $NF}' | awk -F'/' '{ print $NF}' | sort
+	   echo "#################################"
+  else
+      echo "App Instances Running:"
+      echo "#################################"
+      ps -ef | grep java | grep org.apache.catalina.startup.Bootstrap | grep Dcatalina.base= | grep -v grep | awk 'BEGIN { FS = "catalina.base="} { print $2 }'| awk '{print $1}' | awk -F'/' '{ print $NF}' | sort
+      ps -ef | grep java | grep "\-jar" | grep -v grep | awk '{print $NF}' | awk -F'/' '{ print $NF}' | sort
+      echo "#################################"
+  fi
+}
+#####################################################################
+jports()
+{
+  echo "###############################################"
+  printf "%-10s %-28s %-10s\n" "PID" "APP INSTANCE" "PORT"
+  echo "###############################################"
+  for i in $(ps -ef | grep java | grep org.apache.catalina.startup.Bootstrap | sed 's/ /\n/g' | grep catalina.base= | awk -F= '{print $2}' | sort)
+  do
+    app_instance=$(echo $i | awk -F'/' '{print $NF}')
+    pid=$(ps -ef | grep java | grep "$i " | grep "Dcatalina.base=$i " | grep -v grep | awk '{print $2}')
+    port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | awk '{print $4}' | awk -F: '{print $NF}')
+    printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+  done
+
+  for i in $(ps -ef | grep java | grep "\-jar" | grep -v grep | awk '{print $NF}' | sort)
+  do
+    app_instance=$(echo $i | awk -F'/' '{print $NF}')
+    pid=$(ps -ef | grep java | grep "$i" | grep -v grep | awk '{print $2}')
+    port=$(netstat -plnt 2>/dev/null | grep java | grep $pid | awk '{print $4}' | awk -F: '{print $NF}')
+    printf "%-10s %-28s %-10s\n" "$pid" "$app_instance" "$port"
+  done
+  echo "###############################################"
+}
+#####################################################################

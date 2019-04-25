@@ -1,0 +1,90 @@
+#####################################################################
+# SCRIPT NAME: user_checks_profile                                 #
+# DESCRIPTION: Profile to check for specific users                  #
+# AUTHOR: Chandra Munukutla                                         #
+#####################################################################
+
+check_user_exit()
+{
+  if [ $# -eq 1 ]; then
+     if [ "$(whoami)" = "${1}" ]; then
+        echo "User is \"${1}\""
+     else
+        echo "User is \"NOT ${1}\".. Exiting"
+        exit 1
+     fi
+  else
+     echo "ERROR: User NOT provided to validate"
+  fi
+}
+
+is_user_check()
+{
+  if [ $# -eq 1 ]; then
+     if [ "$(whoami)" = "${1}" ]; then true; else echo "User is \"NOT\" \"${1}\""; false; fi
+  else
+     echo "ERROR: User NOT provided to validate"
+  fi
+}
+#####################################################################
+check_user_root_exit()
+{
+  if [ "$(whoami)" = "root" ]; then
+     echo "User is \"root\""
+  else
+     echo "User is \"NOT\" \"root\".. Exiting"
+     exit 1
+  fi
+}
+
+is_user_root()
+{
+  if [ "$(whoami)" = "root" ]; then true; else echo "User is \"NOT\" \"root\""; false; fi
+}
+
+#####################################################################
+check_user_deploy_exit()
+{
+  if [ "$(whoami)" = "deploy" ]; then
+     echo "User is \"deploy\""
+  else
+     echo "User is \"NOT\" \"deploy\".. Exiting"
+     exit 1
+  fi
+}
+
+is_user_deploy()
+{
+  if [ "$(whoami)" = "deploy" ]; then true; else echo "User is \"NOT\" \"deploy\"!!"; false; fi
+}
+#####################################################################
+check_user_deploy_root_exit()
+{
+  if [[ "$(whoami)" = "root" || "$(whoami)" = "deploy" ]]; then
+     echo "User is \"$(whoami)\""
+  else
+     echo "User is \"Neither root NOR deploy\".. Exiting"
+     exit 1
+  fi
+}
+
+is_user_deploy_root()
+{
+  if [[ "$(whoami)" = "root" || "$(whoami)" = "deploy" ]]; then true; else "User is \"Neither root NOR deploy\".."; false; fi
+}
+#####################################################################
+check_user_tomcat_exit()
+{
+  if [ "$(whoami)" = "tomcat" ]; then
+     echo "User is \"tomcat\""
+  else
+     echo "User is \"NOT\" \"tomcat\".. Exiting"
+     exit 1
+  fi
+}
+
+is_user_tomcat()
+{
+  if [ "$(whoami)" = "tomcat" ]; then true; else echo "User is \"NOT\" \"tomcat\""; false; fi
+}
+#####################################################################
