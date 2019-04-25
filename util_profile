@@ -762,3 +762,41 @@ in_list()
   fi
 }
 #####################################################################
+# Check if a command Exists
+c_exists(){
+  if [[ $# -eq 1 ]]; then
+     command -v ${1} &>/dev/null && true || false
+  fi
+}
+ccheck()
+{
+  if [[ $# -eq 1 ]]; then
+     command -v ${1} &>/dev/null && echo "\"$(command -v ${1})\" exists!" || echo "\"${1}\" NOT FOUND!"
+  fi
+}
+ccheck_exit()
+{
+  if [[ $# -eq 1 ]]; then
+     command -v ${1} &>/dev/null && {
+        echo "\"$(command -v ${1})\" exists!"
+     } || {
+       echo "\"${1}\" NOT FOUND!"
+       echo "Exiting!!"
+       exit 1
+     }
+  fi
+}
+#####################################################################
+is_dir_writeable()
+{ 
+  if [[ $# -eq 1 ]]; then
+    temp_file="temp_file_$(ts)"
+    touch ${1}/${temp_file}
+    if [[ $? -eq 0 ]]; then
+      rm ${temp_file}
+      true
+    else
+      false
+    fi
+  fi
+}
