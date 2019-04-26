@@ -1,5 +1,5 @@
 ################################################################################
-## AWS PROFILE 
+## AWS PROFILE                                                                 #
 ## AUTHOR:      Chandra Munukutla                                              #
 ## DESCRIPTION: few little utilities                                           #
 ################################################################################
@@ -12,9 +12,21 @@ ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
 #####################################
 # GREP Color Options
 #####################################
-export GREP_OPTIONS='--color=auto'
-GREP_COLORS='ms=1;31:mc=1;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
-export GREP_COLORS
+alias grep="grep --color=auto"
+alias fgrep="fgrep --color=auto"
+alias egrep="egrep --color=auto"
+#GREP_COLORS='ms=1;31:mc=1;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
+#export GREP_COLORS
+#####################################################################
+jq_check()
+{
+  command -v jq &>/dev/null || {
+    echo "ERROR: \"${1}\" NOT FOUND! profile might not work"
+	echo "Try installing \"jq\" using below command.."
+	echo "sudo yum install -y jq"
+  }
+}
+jq_check
 #####################################################################
 myfns()
 {
@@ -83,7 +95,7 @@ is_nitro_instance()
      false
   fi
 }
-
+#########################################################################
 is_hypervisor_uuid()
 {
   if [[ -f /sys/hypervisor/uuid ]] && [[ "$(cut -c1-3 /sys/hypervisor/uuid)" == "ec2" ]]; then
@@ -93,7 +105,7 @@ is_hypervisor_uuid()
      false
   fi
 }
-
+#########################################################################
 inst_metadata()
 {
   if [[ $(curl -s -m 2 -q  http://169.154.169.254/latest/meta-data/ -o /tmp/test.txt) ]]; then
@@ -103,7 +115,7 @@ inst_metadata()
      false
   fi
 }
-
+#########################################################################
 is_aws()
 {
   if [[ $(curl -s http://169.254.169.254/latest/meta-data/services/partition | cut -c1-3) == "aws" ]]; then
@@ -112,7 +124,7 @@ is_aws()
      false
   fi
 }
-
+#########################################################################
 is_ec2()
 {
   ERROR=false
@@ -123,24 +135,7 @@ is_ec2()
      false
   fi
 }
-
-## Check and Install ec2-metadata script if it doesn't exist already..
-check_inst_ec2_mdata()
-{
-  if [[ ! $(command -v ec2-metadata) ]]; then
-    INST_DIR="/usr/local/bin"
-    S3_URL="http://s3.amazonaws.com/ec2metadata/ec2-metadata"
-    touch ${INST_DIR}/abc_xyz.txt
-    if [[ $? -eq 0 ]]; then
-       rm ${INST_DIR}/abc_xyz.txt
-       curl -s ${S3_URL} -o ${INST_DIR}/ec2-metadata && chmod +x ${INST_DIR}/ec2-metadata
-    else
-       sudo curl -s ${S3_URL} -o ${INST_DIR}/ec2-metadata && chmod +x ${INST_DIR}/ec2-metadata
-    fi
-  fi
-}
-check_inst_ec2_mdata
-
+#########################################################################
 my_ip()
 {
   if is_ec2; then
@@ -150,6 +145,17 @@ my_ip()
   fi
 }
 alias myip=my_ip
+#########################################################################
+jq_check()
+{
+  command -v jq &>/dev/null || {
+    echo "ERROR: \"${1}\" NOT FOUND! profile might not work"
+	echo "Try installing \"jq\" using below command.."
+	echo "sudo yum install -y jq"
+  }
+}
+jq_check
+#########################################################################
 
 if is_ec2; then
    instance_id()
@@ -251,8 +257,9 @@ ask_pipeline_exec_id()
 ask_region()
 { 
   # if you are on a your laptop, ask for region input
-  # if you are on aws node then, the aws cli commands can use a Role which has appropriate policy defined
-  # to execute the AWS CLI queries - typically with RO access
+  # if you are on aws node then, the aws cli commands use a Role 
+  # "hyla-aws-main-role" OR "prod-aws-main-role" OR "nonp-aws-main-role" to figure out the region.
+  # 
   if is_ec2; then
      echo "On EC2 Node.."
 	 my_region=$(region)
@@ -271,8 +278,7 @@ ask_profile()
 {
   ERROR=false
   # if you are on a your laptop, ask for profile input
-  # if you are on aws node then, the aws cli commands can use a Role which has appropriate policy defined
-  # to execute the AWS CLI queries - typically with RO access
+  # if you are on aws node, then, the aws cli commands use a Role "hyla-aws-main-role"
   if ! is_ec2; then
      echo -n "profile: "
      read my_profile
@@ -667,7 +673,12 @@ get_pipeline_actions()
 get_public_record_sets()
 {
   ask_profile
-  zone_id=$(aws route53 list-hosted-zones ${PRO} | jq -cr '.HostedZones[] | if .Config.PrivateZone == false then .Id else empty end' | cut -d'/' -f3)
-  aws route53 list-resource-record-sets --hosted-zone-id ${zone_id} ${PRO} | jq -cr '.ResourceRecordSets[] | "\(.Type),\(.Name)"'
+  for i in $(aws route53 list-hosted-zones ${PRO} | jq -cr '.HostedZones[] | if .Config.PrivateZone == false then .Id else empty end')
+  do
+    zone_id=$(echo $i | cut -d/ -f3)
+    echo "Zone ID - $zone_id"
+    aws route53 list-resource-record-sets --hosted-zone-id ${zone_id} ${PRO} | jq -cr '.ResourceRecordSets[] | "\(.Type),\(.Name)"'
+	echo "#####################################################################"
+  done
 }
 #####################################################################
