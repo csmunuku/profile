@@ -800,3 +800,16 @@ is_dir_writeable()
     fi
   fi
 }
+#####################################################################
+# for loop stuff
+# loop through a file and run something/a command against each line.
+fl()
+{
+  is_file ${1} && {
+     for i in $(cat ${1})
+     do
+       ${@:2} ${i}
+     done
+  }
+}
+#####################################################################
