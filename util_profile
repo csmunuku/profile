@@ -813,3 +813,7 @@ fl()
   }
 }
 #####################################################################
+# ansible specific aliases
+alias agroups="grep '\[' /etc/ansible/hosts"
+
+
