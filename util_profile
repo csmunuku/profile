@@ -813,7 +813,16 @@ fl()
   }
 }
 #####################################################################
-# ansible specific aliases
-alias agroups="grep '\[' /etc/ansible/hosts"
-
+# ansible specific aliases and functions
+A_HOSTS_FILE="/etc/ansible/hosts"
+alias agroups="grep '\[' ${A_HOSTS_FILE}"
+apat()
+{
+  printf "Enter search pattern: "
+  read pattern
+  if [[ -n ${pattern} ]]; then
+      sed -n "/$pattern/,/^$/p" ${A_HOSTS_FILE}
+  fi
+}
+#####################################################################
 
