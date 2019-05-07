@@ -18,12 +18,25 @@ alias egrep="egrep --color=auto"
 #GREP_COLORS='ms=1;31:mc=1;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
 #export GREP_COLORS
 #####################################################################
+ec2-metadata_check()
+{
+  command -v ec2-metadata &>/dev/null || {
+    echo "ERROR: \"ec2-metadata\" is NOT FOUND!"
+	echo "Try installing \"ec2-metadata\" using below commands.."
+	echo "sudo curl http://s3.amazonaws.com/ec2metadata/ec2-metadata -o /usr/local/bin/ec2-metadata && \
+	chmod +x /usr/local/bin/ec2-metadata"
+  }
+}
+ec2-metadata_check
+#####################################################################
 jq_check()
 {
   command -v jq &>/dev/null || {
-    echo "ERROR: \"${1}\" NOT FOUND! profile might not work"
+    echo "ERROR: \"jq\" is NOT FOUND! profile might not work"
 	echo "Try installing \"jq\" using below command.."
 	echo "sudo yum install -y jq"
+	echo "OR"
+	echo "sudo dnf install jq"
   }
 }
 jq_check
