@@ -814,8 +814,22 @@ fl()
 }
 #####################################################################
 # ansible specific aliases and functions
-A_HOSTS_FILE="/etc/ansible/hosts"
-alias agroups="grep '\[' ${A_HOSTS_FILE}"
+aConfig()
+{
+  if [[ -n ${ANSIBLE_CONFIG} ]]; then
+     echo "ENV Variable ANSIBLE_CONFIG is set to - ${ANSIBLE_CONFIG}"
+  elif [[ -f $(pwd)/ansible.cfg ]]; then
+     echo "Local ansible.cfg file used"
+  elif [[ -f ~/.ansible.cfg ]]; then
+     echo ".ansible.cfg file from Home directory is being used"
+  elif [[ -f /etc/ansible/ansible.cfg ]]; then
+     echo "/etc/ansible/ansible.cfg file is being used"
+  fi
+}
+aHosts()
+{
+  A_HOSTS_FILE="/etc/ansible/hosts"
+  alias agroups="grep '\[' ${A_HOSTS_FILE}"
 apat()
 {
   printf "Enter search pattern: "
