@@ -839,4 +839,13 @@ apat()
   fi
 }
 #####################################################################
-
+haproxy_apps()
+{
+  # to get the list of Apps configured in haproxy.cfg file
+  if [[ $# -eq 1 && -f ${1} ]]; then
+    sed -n "/listen/,/^$/p" ${1} | grep -E "listen|server" | grep -v "#" | sed 's/^ *//g' | awk '{print $2, $3}'
+  else
+    sed -n "/listen/,/^$/p" /etc/haproxy/haproxy.cfg | grep -E "listen|server" | grep -v "#" | sed 's/^ *//g' | awk '{print $2, $3}'
+  fi
+}
+#####################################################################
