@@ -787,20 +787,6 @@ ccheck_exit()
   fi
 }
 #####################################################################
-is_dir_writeable()
-{ 
-  if [[ $# -eq 1 ]]; then
-    temp_file="temp_file_$(ts)"
-    touch ${1}/${temp_file}
-    if [[ $? -eq 0 ]]; then
-      rm ${temp_file}
-      true
-    else
-      false
-    fi
-  fi
-}
-#####################################################################
 # for loop stuff
 # loop through a file and run something/a command against each line.
 fl()
