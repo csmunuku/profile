@@ -830,6 +830,7 @@ aHosts()
 {
   A_HOSTS_FILE="/etc/ansible/hosts"
   alias agroups="grep '\[' ${A_HOSTS_FILE}"
+}
 apat()
 {
   printf "Enter search pattern: "
