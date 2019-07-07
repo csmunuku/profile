@@ -3,9 +3,17 @@
 # DESCRIPTION: Utility Functions                                    #
 # AUTHOR: Chandra Munukutla - a list of functions                   #
 #####################################################################
+# v_ functions - deals with variables.  Acts on the variable passed as argument.
+# i_ functions - does in-place edits to the file passed as argument.
+# p_ functions - deals with arguments passed as input via pipe.
+# is_ functions - checks condition and returns true or false based on the condition.
+# just function name without those pre-fixes does what the function says.
+#####################################################################
 
 # Source file checks profile
 if [[ -f /etc/.file_checks_profile ]]; then source /etc/.file_checks_profile; fi
+
+# dumps current timestamp
 ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
 #####################################################################
 ERROR=false
@@ -164,6 +172,9 @@ i_replace_firstChar_with_secondChar(){ is_file ${1} && (
 #####################################################################
 to_lower(){ is_file ${1} && (cat ${1} | /usr/bin/tr '[A-Z]' '[a-z]'); }
 to_upper(){ is_file ${1} && (cat ${1} | /usr/bin/tr '[a-z]' '[A-Z]'); }
+
+v_to_lower(){ is_one_arg ${1} && (echo ${1} | /usr/bin/tr '[A-Z]' '[a-z]'); }
+v_to_upper(){ is_one_arg ${1} && (echo ${1} | /usr/bin/tr '[a-z]' '[A-Z]'); }
 
 rm_empty_lines(){ is_file ${1} && (grep -v '^$' ${1}); }
 
