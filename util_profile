@@ -17,7 +17,9 @@ if [[ -f /etc/.file_checks_profile ]]; then source /etc/.file_checks_profile; fi
 ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
 #####################################################################
 ERROR=false
-check_for_error(){ if [ "${ERROR}" = "true" ]; then true; elif [ "${ERROR}" = "false" ]; then false; fi; }
+check_for_error(){ if [[ "${ERROR}" == "true" || "${SUCCESS} == "false" ]]; then true; elif [[ "${ERROR}" == "false" || "${SUCCESS} == "true" ]]; then false; fi; }
+is_error(){ if [[ "${ERROR}" == "true" || "${SUCCESS} == "false" ]]; then true; elif [[ "${ERROR}" == "false" || "${SUCCESS} == "true" ]]; then false; fi; }
+is_success(){ if [[ "${ERROR}" == "false" || "${SUCCESS} == "true" ]]; then true; elif [[ "${ERROR}" == "true" || "${SUCCESS} == "false" ]]; then false; fi; }
 
 #####################################################################
 is_one_arg(){ 
