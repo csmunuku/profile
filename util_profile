@@ -87,18 +87,26 @@ is_two_arg(){
   fi
 }
 is_three_arg(){ 
-  if [[ $# -eq 2 ]]; then
+  if [[ $# -eq 3 ]]; then
      true
   else
      false
   fi
 }
-zeroArgsExit()
+is_zeroArgs()
+{
+  if [[ $# -eq 0 ]]; then
+     true
+  else
+     false
+  fi
+}
+check_zeroArgs()
 {
   if [[ $# -eq 0 ]]; then
      echo "Zero Arguments provided to this script!"
-	 usage
-	 exit 1
+     usage
+     exit 1
   fi
 }
 ####################################################################################
@@ -486,11 +494,13 @@ p_is_number()
 }
 is_digit()
 {
-  if [[ "${1}" =~ ^[0-9]+$ ]]; then
-     true
-  else
-     false
-  fi
+  is_one_arg ${1} && {
+     if [[ "${1}" =~ ^[0-9]+$ ]]; then
+        true
+     else
+        false
+     fi
+  }
 }
 p_is_digit()
 {
