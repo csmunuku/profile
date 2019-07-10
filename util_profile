@@ -27,7 +27,7 @@ is_error(){ if [[ "${ERROR}" == "true" || "${SUCCESS}" == "false" ]]; then true;
 is_success(){ if [[ "${ERROR}" == "false" || "${SUCCESS}" == "true" ]]; then true; elif [[ "${ERROR}" == "true" || "${SUCCESS}" == "false" ]]; then false; fi; }
 
 # USAGE Info:
-# Let us try curl command to download yahoo home page.e.
+# Let us try curl command to download yahoo home page.
 # curl -k -f -s https://www.yahoo.com
 # is_ExitStatus $? "Download FAILED from yahoo" "Download from yahoo good"
 # First Arg - exit status of prev command
