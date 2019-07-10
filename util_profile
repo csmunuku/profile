@@ -625,6 +625,62 @@ try()
   done
 }
 #####################################################################
+# Try something a specific number of times and exist if ERROR occurred after trying 
+# tryAndExitIfError 5 10 ls -alrt
+# tryAndExitIfError 5 times with 10 second sleep every time
+# execute 'ls -alrt' and check for exit status
+# if exit status is NON-Zero, then try till we reach 5 tries and exit after last try.
+# if exit status is success, then break the loop.
+# Example: tryAndExitIfError 5 5 curl -f -s https://www.google.com/goooo
+tryAndExitIfError()
+{
+  ERROR=
+  if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${1} - is NOT a number"
+     echo "Trying this 1 time.."
+     count=1
+  else
+     count=${1}
+  fi
+  if ! [[ "${2}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${2} - is NOT a number"
+     echo "Sleep seconds is defaulting to 3"
+     sleepSeconds=3
+  else
+     sleepSeconds=${2}
+  fi
+
+  #echo "INFO: Trying this $count number of times.."
+  shift
+  shift
+  for i in $(seq 1 $count)
+  do
+    echo "Trying below command - $i time:"
+    echo "${*}"
+    ${*}
+    if [[ $? -eq 0 ]]; then
+       ERROR=false
+       break
+    else
+##     sleep ${sleepSeconds}  
+       # we can use sleeping function to print dots
+       sleeping ${sleepSeconds}
+       continue
+    fi
+  done
+  if [[ "${ERROR}" != "false" ]]; then
+     ERROR=true
+     total_seconds=$(expr $count \* $sleepSeconds)
+     echo "ERROR: Exiting on ERROR after trying below command for $total_seconds seconds"
+     echo "${*}"
+     exit 1
+  fi
+}
+#####################################################################
+# Convert backslash to Forward Slash and vice versa.
+v_backToForwardslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\\/\//g'); }
+v_forwardToBackslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\//\\/
+#####################################################################
 # function like telnet to check connectivity (using netcat)
 check()
 {
