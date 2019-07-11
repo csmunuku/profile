@@ -739,7 +739,7 @@ tryAndExitIfError()
 ####################################################################################
 # Convert backslash to Forward Slash and vice versa.
 v_backToForwardslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\\/\//g'); }
-v_forwardToBackslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\//\\/
+v_forwardToBackslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\//\\/g'); }
 ####################################################################################
 # function like telnet to check connectivity (using netcat)
 check()
@@ -864,7 +864,7 @@ to_braces()
   }
 }
 ####################################################################################
-## example: in_list $* && echo "Success" || echo "TEST FAILED"
+## example: in_list dev $* && echo "Success" || echo "TEST FAILED"
 ## This will check if the first argument is present in the rest of the arguments list.
 ##
 ## typically useful to validate user input.
@@ -893,19 +893,19 @@ in_list()
 ####################################################################################
 # Check if a command Exists
 c_exists(){
-  if [[ $# -eq 1 ]]; then
+  is_one_arg ${1} && {
      command -v ${1} &>/dev/null && true || false
-  fi
+  }
 }
 ccheck()
 {
-  if [[ $# -eq 1 ]]; then
+  is_one_arg ${1} && {
      command -v ${1} &>/dev/null && echo "\"$(command -v ${1})\" exists!" || echo "\"${1}\" NOT FOUND!"
-  fi
+  }
 }
 ccheck_exit()
 {
-  if [[ $# -eq 1 ]]; then
+  is_one_arg ${1} && {
      command -v ${1} &>/dev/null && {
         echo "\"$(command -v ${1})\" exists!"
      } || {
@@ -913,7 +913,7 @@ ccheck_exit()
        echo "Exiting!!"
        exit 1
      }
-  fi
+  }
 }
 ####################################################################################
 # for loop stuff
@@ -948,6 +948,7 @@ aHosts()
 }
 apat()
 {
+  A_HOSTS_FILE="/etc/ansible/hosts"
   printf "Enter search pattern: "
   read pattern
   if [[ -n ${pattern} ]]; then
