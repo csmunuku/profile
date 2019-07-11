@@ -803,7 +803,7 @@ ca()
   echo "Done"
 }
 #####*****
-links()
+slinks()
 {
 # Checks and Displays the ls -alrt of links in the current directory
   if [ `ls -1F | grep -c "@$"` -gt 0 ]; then
