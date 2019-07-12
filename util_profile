@@ -741,6 +741,27 @@ tryAndExitIfError()
 v_backToForwardslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\\/\//g'); }
 v_forwardToBackslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\//\\/g'); }
 ####################################################################################
+d2u()
+{
+  if [[ $# -eq 1 && -f ${1} ]]; then
+      hash dos2unix 2>/dev/null && {
+        /usr/bin/dos2unix ${1}
+      } || {
+	    perl -pi -e 's/\r\n/\n/g' ${1}
+	  }
+  fi
+}
+u2d()
+{
+  if [[ $# -eq 1 && -f ${1} ]]; then
+      hash unix2dos 2>/dev/null && {
+        /usr/bin/unix2dos ${1}
+      } || {
+	    perl -pi -e 's/\n/\r\n/g' ${1}
+	  }
+  fi
+}
+####################################################################################
 # function like telnet to check connectivity (using netcat)
 check()
 {
