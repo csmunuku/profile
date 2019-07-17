@@ -762,6 +762,24 @@ u2d()
   fi
 }
 ####################################################################################
+email_me()
+{
+#Four Variables to be defined within the scripts to use this function "email_me"
+# MAIL_FROM=
+# MAIL_TO=
+# MAIL_SUBJECT=
+# MAIL_BODY=
+
+  my_node="$(hostname)"
+  calling_script="$(readlink -f ${0})"
+  if [[ -z "${MAIL_FROM}" ]]; then  MAIL_FROM="DevOps.Team@hylamobile.com"; fi
+  if [[ -z "${MAIL_TO}" ]]; then  MAIL_TO="DevOps.Team@hylamobile.com"; fi
+  if [[ -z "${MAIL_SUBJECT}" ]]; then  MAIL_SUBJECT="ERROR: from script - ${my_node}:${calling_script}"; fi
+  if [[ -z "${MAIL_BODY}" ]]; then  MAIL_BODY="ERROR: from script - ${my_node}:${calling_script}"; fi
+  echo -e "${MAIL_BODY}" | mailx -s "${MAIL_SUBJECT}" -r "${MAIL_FROM}" "${MAIL_TO}"
+  if [[ $? -eq 0 ]]; then echo "Email sent successfully."; else echo "ERROR: encountered error sending email from ${my_node}:${0}" ; fi
+}
+####################################################################################
 # function like telnet to check connectivity (using netcat)
 check()
 {
