@@ -440,26 +440,29 @@ check()
 {
   hash nc 2>/dev/null && {
     if [[ $# -eq 1 && -f ${1} ]]; then
-       for i in $(cat ${1})
+       while read -r i
        do
-         domain=$(awk -F, '{print $1}')
-    	   port=$(awk -F, '{print $2}')
-    	   nc -w 2 -z $domain $port 2>/dev/null
-	     if [ $? -eq 0 ]; then
+         if [[ $(echo $i | grep -c "^#") -ne 1 ]]; then
+            domain=$(echo $i | awk -F, '{print $1}')
+    	    port=$(echo $i | awk -F, '{print $2}')
+    	    nc -w 2 -z $domain $port 2>/dev/null
+	    if [ $? -eq 0 ]; then
 	       echo "SUCCESS: Connected to $domain on port $port"
-	     else
+	    else
 	       echo "ERROR  : Failed to connect to $domain on port $port"
-	     fi
-       done
+	    fi
+	 fi
+        done < ${1}
     elif [[ $# -eq 2 ]]; then
        domain=${1}; port=${2}
        nc -w 2 -z $domain $port 2>/dev/null
-	   if [ $? -eq 0 ]; then
-	     echo "SUCCESS: Connected to $domain on port $port"
-	   else
-	     echo "ERROR  : Failed to connect to $domain on port $port"
-	   fi
+       if [ $? -eq 0 ]; then
+	   echo "SUCCESS: Connected to $domain on port $port"
+       else
+	   echo "ERROR  : Failed to connect to $domain on port $port"
+       fi
     fi
   }
+}
 }
 #####################################################################
