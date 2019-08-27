@@ -592,28 +592,57 @@ state_val()
                       [northern mariana islands]="MP" [palau]="PW" [puerto rico]="PR" [virgin islands]="VI"
                     )
   declare -a state_abr=(AK AL AR AS AZ CA CO CT DC DE FL FM GA GU HI IA ID IL IN KS KY LA MA MD ME MH MI MN MO MP MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR PW RI SC SD TN TX UT VA VI VT WA WI WV WY)
-  
+
+  declare -A canada_states=( [alberta]="AB" [british columbia]="BC" [manitoba]="MB"
+                             [new brunswick]="NB" [newfoundland and labrador]="NL" [northwest territories]="NT"
+                             [nova scotia]="NS" [nunavut]="NU" [ontario]="ON" [prince edward island]="PE"
+                             [quebec]="QC" [saskatchewan]="SK" [yukon]="YT"
+                           )
+
+  declare -a canada_state_abr=(AB BC MB NB NL NT NS NU ON PE QC SK YT)
+
   if [[ $# -eq 0 ]]; then
      echo "ERROR"
-  elif [[ $# -eq 1 && ${#1} -eq 2 ]]; then
+  elif [[ $# -eq 1 && ${#1} -eq 2 ]]; then  # Argument is one and letter count of first arg is 2
      state_input="$(echo "${1}" | p_to_upper)"
-     if [[ ! " ${state_abr[@]} " =~ " ${state_input} " ]]; then
-	    echo "ERROR"
-	 else
-	    echo ${1}
-	 fi
+     if [[ ! " ${state_abr[@]} " =~ " ${state_input} " ]] && [[ ! " ${canada_state_abr[@]} " =~ " ${state_input} " ]]; then
+        echo "ERROR"
+     else
+        echo ${1}
+     fi
   else
      from_input="$(echo "${*}" | p_to_lower)"
      from_states_array=${states[${from_input}]}
-     
-     if [[ ! -z ${from_states_array} ]]; then
+
+     if [[ -n ${from_states_array} ]]; then
          echo "${from_states_array}"
+     elif [[ -z ${from_states_array} ]]; then
+            from_canada_states_array=${canada_states[${from_input}]}
+            if [[ -n ${from_canada_states_array} ]]; then
+               echo "${from_canada_states_array}"
+            else
+               echo "${*}"
+            fi
      else
          echo "${*}"
      fi
   fi
 }
-####################################################################################
+#####################################################################
+val_zip()
+{
+  us_zip_regex='^[0-9]{5}(-[0-9]{4})?$'
+  canada_zip_regex="^[ABCEGHJ-NPRSTVXY][0-9][ABCEGHJ-NPRSTV-Z][ -]?[0-9][ABCEGHJ-NPRSTV-Z][0-9]$"
+  input="${*}"
+  my_input="$(echo $input | /usr/bin/tr '[a-z]' '[A-Z]')"
+
+  if [[ "${my_input}" =~ ${us_zip_regex} ]] || [[ "${my_input}" =~ ${canada_zip_regex} ]]; then
+     echo "${my_input}"
+  else
+     echo "ERROR"
+  fi
+}
+#####################################################################
 dns()
 {
   if [ $# -eq 1 -a -f ${1} ]; then
