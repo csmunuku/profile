@@ -765,6 +765,37 @@ tryAndExitIfError()
      exit 1
   fi
 }
+#####################################################################
+# Repeat something a specific number of times
+# repeat 5 5 kill -3 ${PID}
+# repeat 5 times with 5 second sleep interval every time
+# Example: repeat 5 5 kill -3 ${PID}
+#####################################################################
+repeat()
+{
+  if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${1} - is NOT a number"
+     echo "Taking the count as 1 .."
+     count=1
+  else
+     count=${1}
+  fi
+  if ! [[ "${2}" =~ ^[0-9]+$ ]]; then
+     echo "ERROR: ${2} - is NOT a number"
+     echo "Sleep seconds is defaulting to 3"
+     sleepSeconds=3
+  else
+     sleepSeconds=${2}
+  fi
+  shift
+  shift
+  for i in $(seq 1 $count)
+  do
+    echo "Trying below command - $i time:"
+    echo "${*}"
+    ${*}
+  done
+}
 ####################################################################################
 # Convert backslash to Forward Slash and vice versa.
 v_backToForwardslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\\/\//g'); }
