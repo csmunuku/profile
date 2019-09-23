@@ -1,0 +1,45 @@
+#####################################################################
+# SCRIPT NAME: delete_ops_profile                                  #
+# DESCRIPTION: Utility Functions                                    #
+# AUTHOR: Chandra Munukutla - a list of functions                   #
+#####################################################################
+_delete_file_if_exists()
+{
+   if [[ $# -eq 1 ]]; then
+      if [[ -f ${1} ]]; then
+	     /bin/rm ${1}
+		 if [[ $? -eq 0 ]]; then
+		    echo "File ${1} - removed successfully!"
+		 else
+		    echo "ERROR: Remove failed for ${1} file!"
+			echo "Please check!"
+			echo "FROM: function call - ${FUNCNAME[0]}"
+		 fi
+	  fi
+   elif [[ $# -gt 1 ]]; then
+      echo "ERROR: More Arguments were provided for delete function - ${FUNCNAME[0]}"
+   elif [[ $# -eq 0 ]]; then
+      echo "ERROR: No Argument was provided for delete function - ${FUNCNAME[0]}"
+   fi
+}
+#####################################################################
+_delete_dir_if_exists()
+{
+   if [[ $# -eq 1 ]]; then
+      if [[ -d ${1} ]]; then
+	     /bin/rm -rf ${1}
+		 if [[ $? -eq 0 ]]; then
+		    echo "Directory ${1} - removed successfully!"
+		 else
+		    echo "ERROR: Remove failed for ${1} Directory!"
+			echo "Please check!"
+			echo "FROM: function call - ${FUNCNAME[0]}"
+		 fi
+	  fi
+   elif [[ $# -gt 1 ]]; then
+      echo "ERROR: More Arguments were provided for delete function - ${FUNCNAME[0]}"
+   elif [[ $# -eq 0 ]]; then
+      echo "ERROR: No Argument was provided for delete function - ${FUNCNAME[0]}"
+   fi
+}
+#####################################################################
