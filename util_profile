@@ -17,6 +17,7 @@ if [[ -f /etc/.file_checks_profile ]]; then source /etc/.file_checks_profile; fi
 # dumps current timestamp
 ts(){ echo "$(date '+%Y%m%d_%H%M%S')"; }
 ####################################################################################
+ERROR=false
 check_for_error(){ 
    if [[ "${ERROR}" == "true" || "${SUCCESS}" == "false" ]]; then 
       echo "ERROR"
@@ -526,6 +527,7 @@ my_counter=0
 inc_counter(){ ((my_counter = my_counter + 1)); }
 dec_counter(){ ((my_counter = my_counter - 1)); }
 ####################################################################################
+# Function to choose one among various options.
 choose()
 {
   my_counter=1
@@ -556,6 +558,7 @@ choose()
   fi
 }
 ####################################################################################
+# Validate US phone number and format it as (999) 999-9999
 phone_number()
 {
   if [ $# -eq 1 ]; then
@@ -577,6 +580,7 @@ phone_number()
   fi
 }
 ####################################################################################
+# Validate US State and Canada State - two letter Abbreviations 
 state_val()
 {
   declare -A states=( [alabama]="AL" [alaska]="AK" [arizona]="AZ" [arkansas]="AR" [california]="CA" [colorado]="CO"
@@ -591,7 +595,7 @@ state_val()
                       [district of columbia]="DC" [federated states of micronesia]="FM" [guam]="GU" [marshall islands]="MH"
                       [northern mariana islands]="MP" [palau]="PW" [puerto rico]="PR" [virgin islands]="VI"
                     )
-  declare -a state_abr=(AK AL AR AS AZ CA CO CT DC DE FL FM GA GU HI IA ID IL IN KS KY LA MA MD ME MH MI MN MO MP MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR PW RI SC SD TN TX UT VA VI VT WA WI WV WY)
+  declare -a state_abbr=(AK AL AR AS AZ CA CO CT DC DE FL FM GA GU HI IA ID IL IN KS KY LA MA MD ME MH MI MN MO MP MS MT NC ND NE NH NJ NM NV NY OH OK OR PA PR PW RI SC SD TN TX UT VA VI VT WA WI WV WY)
 
   declare -A canada_states=( [alberta]="AB" [british columbia]="BC" [manitoba]="MB"
                              [new brunswick]="NB" [newfoundland and labrador]="NL" [northwest territories]="NT"
@@ -599,13 +603,13 @@ state_val()
                              [quebec]="QC" [saskatchewan]="SK" [yukon]="YT"
                            )
 
-  declare -a canada_state_abr=(AB BC MB NB NL NT NS NU ON PE QC SK YT)
+  declare -a canada_state_abbr=(AB BC MB NB NL NT NS NU ON PE QC SK YT)
 
   if [[ $# -eq 0 ]]; then
      echo "ERROR"
   elif [[ $# -eq 1 && ${#1} -eq 2 ]]; then  # Argument is one and letter count of first arg is 2
      state_input="$(echo "${1}" | p_to_upper)"
-     if [[ ! " ${state_abr[@]} " =~ " ${state_input} " ]] && [[ ! " ${canada_state_abr[@]} " =~ " ${state_input} " ]]; then
+     if [[ ! " ${state_abbr[@]} " =~ " ${state_input} " ]] && [[ ! " ${canada_state_abbr[@]} " =~ " ${state_input} " ]]; then
         echo "ERROR"
      else
         echo ${1}
@@ -629,6 +633,7 @@ state_val()
   fi
 }
 #####################################################################
+# Validate Zip Code for US and Canada.
 val_zip()
 {
   us_zip_regex='^[0-9]{5}(-[0-9]{4})?$'
@@ -670,7 +675,7 @@ sleeping()
      echo
   fi
 }
-####################################################################################
+#####################################################################
 # Try something a specific number of times
 # try 5 10 ls -alrt
 # try 5 times with 10 second sleep every time
@@ -680,6 +685,7 @@ sleeping()
 # Example: try 5 5 curl -f -s https://www.google.com/goooo
 try()
 {
+  ERROR=
   if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
      echo "ERROR: ${1} - is NOT a number"
      echo "Trying this 1 time.."
@@ -695,25 +701,24 @@ try()
      sleepSeconds=${2}
   fi
 
-  #echo "INFO: Trying this $count number of times.."
-  shift
-  shift
   for i in $(seq 1 $count)
   do
     echo "Trying below command - $i time:"
-    echo "${*}"
-    ${*}
+    echo "${@:3}"
+    "${@:3}"
     if [[ $? -eq 0 ]]; then
+       ERROR=false
        break
     else
-##	   sleep ${sleepSeconds}  
-       # we can use sleeping function to print dots
        sleeping ${sleepSeconds}
        continue
     fi
   done
+  if [[ "${ERROR}" != "false" ]]; then
+     ERROR=true
+  fi
 }
-####################################################################################
+#####################################################################
 # Try something a specific number of times and exist if ERROR occurred after trying 
 # tryAndExitIfError 5 10 ls -alrt
 # tryAndExitIfError 5 times with 10 second sleep every time
@@ -739,20 +744,15 @@ tryAndExitIfError()
      sleepSeconds=${2}
   fi
 
-  #echo "INFO: Trying this $count number of times.."
-  shift
-  shift
   for i in $(seq 1 $count)
   do
     echo "Trying below command - $i time:"
-    echo "${*}"
-    ${*}
+    echo "${@:3}"
+    "${@:3}"
     if [[ $? -eq 0 ]]; then
        ERROR=false
        break
     else
-##     sleep ${sleepSeconds}  
-       # we can use sleeping function to print dots
        sleeping ${sleepSeconds}
        continue
     fi
@@ -761,7 +761,7 @@ tryAndExitIfError()
      ERROR=true
      total_seconds=$(expr $count \* $sleepSeconds)
      echo "ERROR: Exiting on ERROR after trying below command for $total_seconds seconds"
-     echo "${*}"
+     echo "${@:3}"
      exit 1
   fi
 }
@@ -787,16 +787,14 @@ repeat()
   else
      sleepSeconds=${2}
   fi
-  shift
-  shift
   for i in $(seq 1 $count)
   do
     echo "Trying below command - $i time:"
-    echo "${*}"
-    ${*}
+    echo "${@:3}"
+    "${@:3}"
   done
 }
-####################################################################################
+#####################################################################
 # Convert backslash to Forward Slash and vice versa.
 v_backToForwardslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\\/\//g'); }
 v_forwardToBackslash() { is_one_arg ${1} && (echo "${1}" | sed 's/\//\\/g'); }
@@ -832,40 +830,42 @@ email_me()
 
   my_node="$(hostname)"
   calling_script="$(readlink -f ${0})"
-  if [[ -z "${MAIL_FROM}" ]]; then  MAIL_FROM="DevOps.Team@hylamobile.com"; fi
-  if [[ -z "${MAIL_TO}" ]]; then  MAIL_TO="DevOps.Team@hylamobile.com"; fi
+  if [[ -z "${MAIL_FROM}" ]]; then  MAIL_FROM="csmunuku@gmail.com"; fi
+  if [[ -z "${MAIL_TO}" ]]; then  MAIL_TO="csmunuku@gmail.com"; fi
   if [[ -z "${MAIL_SUBJECT}" ]]; then  MAIL_SUBJECT="ERROR: from script - ${my_node}:${calling_script}"; fi
   if [[ -z "${MAIL_BODY}" ]]; then  MAIL_BODY="ERROR: from script - ${my_node}:${calling_script}"; fi
   echo -e "${MAIL_BODY}" | mailx -s "${MAIL_SUBJECT}" -r "${MAIL_FROM}" "${MAIL_TO}"
   if [[ $? -eq 0 ]]; then echo "Email sent successfully."; else echo "ERROR: encountered error sending email from ${my_node}:${0}" ; fi
 }
-####################################################################################
+#####################################################################
 # function like telnet to check connectivity (using netcat)
 check()
 {
   hash nc 2>/dev/null && {
     if [[ $# -eq 1 && -f ${1} ]]; then
-       for i in $(cat ${1})
+       while read -r i
        do
-         domain=$(awk -F, '{print $1}')
-    	   port=$(awk -F, '{print $2}')
-    	   nc -w 2 -z $domain $port 2>/dev/null
-	     if [ $? -eq 0 ]; then
+         if [[ $(echo $i | grep -c "^#") -ne 1 ]]; then
+            domain=$(echo $i | awk -F, '{print $1}')
+    	    port=$(echo $i | awk -F, '{print $2}')
+    	    nc -w 5 -z $domain $port 2>/dev/null
+	    if [ $? -eq 0 ]; then
 	       echo "SUCCESS: Connected to $domain on port $port"
-	     else
+	    else
 	       echo "ERROR  : Failed to connect to $domain on port $port"
-	     fi
-       done
+	    fi
+	 fi
+        done < ${1}
     elif [[ $# -eq 2 ]]; then
        domain=${1}; port=${2}
-       nc -w 2 -z $domain $port 2>/dev/null
-	   if [ $? -eq 0 ]; then
-	     echo "SUCCESS: Connected to $domain on port $port"
-	   else
-	     echo "ERROR  : Failed to connect to $domain on port $port"
-	   fi
+       nc -w 5 -z $domain $port 2>/dev/null
+       if [ $? -eq 0 ]; then
+	   echo "SUCCESS: Connected to $domain on port $port"
+       else
+	   echo "ERROR  : Failed to connect to $domain on port $port"
+       fi
     fi
-  } || echo "NetCat NOT Found on this system!"
+  }
 }
 ####################################################################################
 # java process detail
@@ -990,6 +990,33 @@ in_list()
   fi
 }
 ####################################################################################
+## example: in_list_exit $*
+## This will check if the first argument is present in the rest of the arguments list.
+##
+## typically useful to validate user input.
+## echo "user input:"
+## read user_input
+## valid_items="dev qa uat prod"
+## in_list_exit $user_input $valid_items
+##
+in_list_exit()
+{
+  SUCCESS=false
+  first_arg=${1}
+  shift
+  for i in $*
+  do
+    if [[ "${first_arg}" == "${i}" ]]; then
+        SUCCESS=true
+        break
+    fi
+  done
+  if [[ "${SUCCESS}" == "false" ]]; then
+     echo "ERROR: \"${first_arg}\" is NOT in the list: $*"
+     exit 1
+  fi
+}
+####################################################################################
 # Check if a command Exists
 c_exists(){
   is_one_arg ${1} && {
@@ -1064,4 +1091,4 @@ haproxy_apps()
     sed -n "/listen/,/^$/p" /etc/haproxy/haproxy.cfg | grep -E "listen|server" | grep -v "#" | sed 's/^ *//g' | awk '{print $2, $3}'
   fi
 }
-#####################################################################
+####################################################################################
