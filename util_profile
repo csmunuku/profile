@@ -1091,55 +1091,63 @@ haproxy_apps()
     sed -n "/listen/,/^$/p" /etc/haproxy/haproxy.cfg | grep -E "listen|server" | grep -v "#" | sed 's/^ *//g' | awk '{print $2, $3}'
   fi
 }
-####################################################################################
+#####################################################################
 rm_files()
 {
   for i in $*
   do
-    if [[ -n ${i} && -f ${i} ]]; then
-	rm ${i}
+    if [[ -n ${i} ]]; then
+       if [[ -f ${i} ]]; then
+          rm ${i} && echo "Deleted the file \"${i}\"" || echo "ERROR: Deleting the file - \"${i}\""
+       else
+          echo "ERROR: \"${i}\" is NOT a file!"
+       fi
     else
-	echo "ERROR: Not able to Delete - \"${i}\""
+       echo "ERROR: - \"${i}\" is Empty.. Not a file!"
     fi
   done
 }
-####################################################################################
+#####################################################################
 check_dup()
 {
   if [[ $# -eq 1 && -f ${1} ]]; then
      cp -p ${1} ${1}_BKP
-	 sort ${1} > ${1}_SORTED
-	 sort -u ${1} > ${1}_SUNIQ
-	 if [[ $(diff -q ${1}_SORTED ${1}_SUNIQ >/dev/null) -eq 0 ]]; then
-	    echo "NO Duplicates found"
-	 else
-	    echo "Below are Duplicate Entries"
-		uniq -d ${1}_SORTED | tee -a ${1}_DUP
-		echo
-		echo "The Duplicate entries are Stored in file - ${1}_DUP"
-	 fi
-  elif [[ $# -eq 2 && -f ${1} ]]; then
-     if [[ -f ${2} ]]; then
-	echo "${2} file Exists!! - do you want to overwrite?"
-	read user_input
-	case ${user_input} in
-	   yes|Yes|YES) echo "Overwriting ${2} file" ;;
-	   *) echo "Not Overwriting ${2} file.. Exiting.."
-	      exit 1
-	      ;;
-	esac
+     sort ${1} > ${1}_SORTED
+     sort -u ${1} > ${1}_SUNIQ
+     diff -q ${1}_SORTED ${1}_SUNIQ >/dev/null
+     if [[ $? -eq 0 ]]; then
+        echo "NO Duplicates found"
+     else
+        echo "Below are Duplicate Entries"
+        uniq -d ${1}_SORTED | tee -a ${1}_DUP
+        echo
+        echo "The Duplicate entries are Stored in file - ${1}_DUP"
+        rm_files ${1}_BKP ${1}_SORTED
      fi
-	 cp -p ${1} ${1}_BKP
-	 sort ${1} > ${2}_SORTED
-	 sort -u ${1} > ${2}_SUNIQ
-	 if [[ $(diff -q ${2}_SORTED ${2}_SUNIQ >/dev/null) -eq 0 ]]; then
-	    echo "NO Duplicates found"
-	 else
-	    echo "Below are Duplicate Entries"
-	    uniq -d ${2}_SORTED | tee -a ${2}_DUP
-	    echo
-	    echo "The Duplicate entries are Stored in file - ${2}_DUP"
-	 fi
+  elif [[ $# -eq 2 && -f ${1} ]]; then
+        if [[ -f ${2} ]]; then
+           echo "${2} file Exists!! - do you want to overwrite?"
+           read user_input
+           case ${user_input} in
+               yes|Yes|YES) echo "Overwriting ${2} file" ;;
+               *) echo "Not Overwriting ${2} file.. Exiting.."
+                  exit 1
+                  ;;
+           esac
+        fi
+        cp -p ${1} ${1}_BKP
+        sort ${1} > ${2}_SORTED
+        sort -u ${1} > ${2}_SUNIQ
+        diff -q ${2}_SORTED ${2}_SUNIQ >/dev/null
+        if [[ $? -eq 0 ]]; then
+           echo "NO Duplicates found"
+        else
+           echo "Below are Duplicate Entries"
+           uniq -d ${2}_SORTED | tee -a ${2}_DUP
+           echo
+           echo "The Duplicate entries are Stored in file - ${2}_DUP"
+           rm_files ${1}_BKP ${2}_SORTED
+        fi
   else
      echo "TO Check Duplicates in the <source_file>"
      echo "USAGE:"
@@ -1147,7 +1155,6 @@ check_dup()
      echo "OR"
      echo "${FUNCNAME[0]} <source_file> <dest_file>"
   fi
-  rm_files ${1}_BKP ${1}_SORTED ${2}_SORTED
 }
-####################################################################################
+#####################################################################
 
