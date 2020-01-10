@@ -135,6 +135,8 @@ i_strip_leading_trailing_spaces_tabs(){ is_file ${1} && sed -i_$(ts) -e 's/^[ \t
 strip_empty_lines(){ is_file ${1} && (grep -v '^$' ${1}); }
 i_strip_empty_lines(){ is_file ${1} && sed -i_$(ts) '/^$/d' ${1};}
 ##################
+header(){ is_file ${1} && (head -1 ${1}); }
+footer(){ is_file ${1} && (tail -1 ${1}); }
 strip_header(){ is_file ${1} && (sed '1d' ${1}); }
 i_strip_header(){ is_file ${1} && sed -i_$(ts) '1d' ${1}; }
 ##################
@@ -1143,7 +1145,7 @@ check_dup()
            echo "NO Duplicates found"
         else
            echo "Below are Duplicate Entries"
-           uniq -d ${2}_SORTED | tee -a ${2}_DUP
+           uniq -d ${2}_SORTED > ${2}_DUP
            echo
            echo "The Duplicate entries are Stored in file - ${2}_DUP"
            rm_files ${1}_BKP ${2}_SORTED
