@@ -1159,4 +1159,19 @@ check_dup()
   fi
 }
 #####################################################################
+err()
+{
+  MY_REGEX=" error|error:|fatal|exception|failed|exiting|cannot|no such| not found|invalid|denied"
+  if [[ $# -eq 1 ]] && [[ -d $(readlink -f ${1}) ]]; then
+     pushd ${1}
+     pwd
+     grep -iE "${MY_REGEX}" {*log*,*out*}
+     popd
+  elif [[ $# -eq 1 ]] && [[ -f $(readlink -f ${1}) ]]; then
+     grep -iE "${MY_REGEX}" $(readlink -f ${1})
+  else
+     echo "Provide a file or directory as argument to check for errors"
+  fi
+}
+#####################################################################
 
