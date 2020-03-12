@@ -11,7 +11,7 @@ check_file_exists()
        exit 1
   elif [[ $# -eq 1 && ! -f $1 ]]; then
        echo "Argument provided is NOT a file!"
-	   exit 1
+       exit 1
   fi
 }
 
@@ -24,19 +24,19 @@ is_file()
         echo "Provide a File as an argument!!"
 		false
      elif [[ $# -eq 1 && ! -f $1 ]]; then
-	    echo "Argument provided is NOT a file!"
-	    false
+	  echo "Argument provided is NOT a file!"
+	  false
      fi
   fi
 }
-
+#####################################################################
 is_csv_file()
 {
   is_file ${1} && {
     if [[ $(grep -c ',' ${1}) -lt 1 ]]; then
-	   false
-	else
-	   true
+       false
+    else
+       true
     fi
   }
 }
@@ -45,9 +45,30 @@ check_csv_file()
 {
   check_file_exists ${1} && {
     if [[ $(grep -c ',' ${1}) -lt 1 ]]; then
-	   echo "Argument provided is NOT a CSV file!"
-	   exit 1
+       echo "Argument provided is NOT a CSV file!"
+       exit 1
     fi
+  }
+}
+#####################################################################
+is_yml_file()
+{
+  is_file ${1} && {
+     if [[ $(head -1 ${1} | grep -c "^---$") -eq 1 ]] && [[ $(echo ${1} | grep -c ".yml$") -eq 1 ]]; then
+        true
+     else
+        false
+     fi
+  }
+}
+
+check_yml_file()
+{
+  check_file_exists ${1} && {
+     if [[ $(head -1 ${1} | grep -c "^---$") -ne 1 ]] || [[ $(echo ${1} | grep -c ".yml$") -ne 1 ]]; then
+        echo "Argument provided is NOT Valid YML file!"
+	exit 1
+     fi
   }
 }
 #####################################################################
